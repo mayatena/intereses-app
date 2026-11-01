@@ -9,7 +9,7 @@
 <g transform="translate(0,30)">
 <circle cx="256" cy="232" r="208" fill="url(#glow)"/>
 <g stroke="#ffd23f" stroke-width="16" stroke-linecap="round">
-<path d="M256 62v-30" transform="translate(0,60)"/>
+<path d="M256 68v-26"/>
 <path d="M376 112l22-22M136 112l-22-22M418 232h30M94 232H64"/>
 </g>
 <path d="M214 340C214 322 206 312 192 296C174 276 163 255 163 232C163 176 204 133 256 133C308 133 349 176 349 232C349 255 338 276 320 296C306 312 298 322 298 340Z" fill="url(#glass)"/>
