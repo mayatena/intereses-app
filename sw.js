@@ -1,5 +1,5 @@
 /* Service worker: la app funciona sin conexión. Guarda la propia app y la librería de fórmulas. */
-const CACHE = 'integra-v1';
+const CACHE = 'integra-v2';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 const MATHJAX = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js';
 self.addEventListener('install', (e) => {
