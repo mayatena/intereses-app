@@ -1,0 +1,1425 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Integra</title>
+<meta name="description" content="Aprende y repasa integrales paso a paso">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Integra">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{color-scheme:light dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+/* Diseño: lienzo blanco, tipografía del sistema, un único azul de acento, tarjetas grises muy suaves. */
+:root {
+  --bg: #ffffff; --bg2: #f5f5f7; --fg: #1d1d1f; --fg2: #6e6e73; --fg3: #a1a1a6; --line: #e5e5ea;
+  --accent: #0071e3; --accent-fg: #ffffff; --accent-soft: #e6f0fc;
+  --ok: #1a7f3c; --ok-soft: #e7f6ec; --bad: #c9342b; --bad-soft: #fdecea;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", system-ui, Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000; --bg2: #1c1c1e; --fg: #f5f5f7; --fg2: #a1a1a6; --fg3: #636366; --line: #2c2c2e;
+    --accent: #2997ff; --accent-fg: #00111f; --accent-soft: #0b2a47;
+    --ok: #4cd37b; --ok-soft: #10301c; --bad: #ff6b60; --bad-soft: #3a1512; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #000000; --bg2: #1c1c1e; --fg: #f5f5f7; --fg2: #a1a1a6; --fg3: #636366; --line: #2c2c2e;
+  --accent: #2997ff; --accent-fg: #00111f; --accent-soft: #0b2a47;
+  --ok: #4cd37b; --ok-soft: #10301c; --bad: #ff6b60; --bad-soft: #3a1512; color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { min-height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.47 var(--font); -webkit-font-smoothing: antialiased;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0;
+}
+button { font-family: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.app { max-width: 560px; margin: 0 auto; padding-block: 8px 72px; }
+.row { display: flex; align-items: center; gap: 10px; }
+.grow { flex: 1; min-width: 0; }
+svg.i { width: 1em; height: 1em; flex: none; }
+
+/* cabecera */
+.top { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 0; min-height: 44px; }
+.top .chips { display: flex; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--bg2); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; border: 0; }
+.chip svg { color: var(--accent); }
+.iconbtn { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--bg2); display: grid; place-items: center; cursor: pointer; font-size: 18px; color: var(--fg2); }
+h1 { font-size: 34px; line-height: 1.1; letter-spacing: -0.025em; margin: 6px 0 2px; font-weight: 700; }
+.lead { color: var(--fg2); margin: 0 0 4px; font-size: 17px; }
+
+/* botones */
+.btn { appearance: none; border: 0; border-radius: 14px; padding: 13px 20px; font: 600 17px var(--font); background: var(--accent); color: var(--accent-fg); cursor: pointer; min-height: 50px; width: 100%; transition: transform .12s, opacity .15s; }
+.btn:active { transform: scale(0.98); }
+.btn.sec { background: var(--bg2); color: var(--accent); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.sm { width: auto; min-height: 40px; padding: 8px 18px; font-size: 15px; }
+.btn:disabled { opacity: 0.35; cursor: default; transform: none; }
+.btn.ok { background: var(--ok); color: #fff; }
+.btn.bad { background: var(--bad); color: #fff; }
+.stack { display: grid; gap: 10px; }
+
+/* tarjeta de hoy */
+.hero { background: var(--bg2); border-radius: 22px; padding: 20px; margin: 18px 0 4px; display: flex; gap: 16px; align-items: center; justify-content: space-between; }
+.hero h2 { font-size: 20px; margin: 0; letter-spacing: -0.015em; }
+.hero p { margin: 2px 0 0; color: var(--fg2); font-size: 15px; }
+
+/* camino */
+.island { margin: 30px 0 6px; }
+.island h2 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg2); font-weight: 600; margin: 0 0 2px; }
+.path { position: relative; width: 300px; max-width: 100%; margin: 0 auto; }
+.node { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; transform: translateX(var(--dx, 0px)); }
+.nb { width: 76px; height: 76px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; background: var(--bg2); color: var(--fg3); font-size: 30px; transition: transform .15s; }
+.nb:active { transform: scale(0.94); }
+.nb.open { background: var(--accent); color: var(--accent-fg); box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 38%, transparent); animation: breathe 2.6s ease-in-out infinite; }
+.nb.done { background: var(--accent-soft); color: var(--accent); }
+.nl { margin-top: 8px; font-weight: 600; font-size: 15px; line-height: 1.25; max-width: 190px; }
+.ns { font-size: 13px; color: var(--fg2); line-height: 1.3; max-width: 190px; }
+.node.locked .nl, .node.locked .ns { color: var(--fg3); }
+.dots { display: flex; gap: 4px; justify-content: center; margin-top: 6px; height: 6px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+.dots i.on { background: var(--accent); }
+.due { font-size: 12px; font-weight: 700; color: var(--accent); margin-top: 4px; }
+.link { display: block; width: 100%; height: 42px; margin-top: 8px; overflow: visible; }
+.link path { fill: none; stroke: var(--line); stroke-width: 3; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.link.done path { stroke: var(--accent); opacity: 0.45; }
+@keyframes breathe { 50% { box-shadow: 0 8px 28px color-mix(in srgb, var(--accent) 55%, transparent); } }
+
+/* hoja inferior y avisos */
+.backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.38); z-index: 40; opacity: 0; transition: opacity .2s; }
+.backdrop.in { opacity: 1; }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; max-width: 560px; margin: 0 auto; background: var(--bg); border-radius: 26px 26px 0 0; z-index: 41;
+  padding: 10px max(20px, env(safe-area-inset-left, 0px)) calc(22px + env(safe-area-inset-bottom, 0px)); transform: translateY(105%); transition: transform .3s cubic-bezier(.2, .8, .2, 1); max-height: 88%; overflow: auto; }
+.sheet.in { transform: none; }
+.sheet .grab { width: 40px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 14px; }
+.sheet h3 { font-size: 24px; letter-spacing: -0.02em; margin: 0 0 2px; }
+.sheet .sub { color: var(--fg2); margin: 0 0 16px; }
+.sheet h4 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg2); margin: 20px 0 6px; }
+.sheet ul { margin: 0; padding-left: 20px; } .sheet li { margin: 4px 0; font-size: 15px; }
+code, .code { font-family: var(--mono); font-size: 0.88em; background: var(--bg2); padding: 1px 6px; border-radius: 6px; }
+
+/* sesión */
+.session { position: fixed; inset: 0; z-index: 30; background: var(--bg); display: flex; flex-direction: column; animation: rise .28s ease-out; }
+@keyframes rise { from { transform: translateY(24px); opacity: 0; } }
+.s-top { padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }
+.s-in { width: 100%; max-width: 560px; margin: 0 auto; }
+.bar { flex: 1; height: 8px; border-radius: 99px; background: var(--bg2); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .4s cubic-bezier(.2, .8, .2, 1); }
+.s-count { font-size: 14px; font-weight: 600; color: var(--fg2); min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+.s-body { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); -webkit-overflow-scrolling: touch; }
+.s-foot { padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); }
+.pdots { display: flex; gap: 6px; justify-content: center; margin: 4px 0 0; }
+.pdots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+.pdots i.on { background: var(--accent); }
+
+.tpage h3 { font-size: 30px; line-height: 1.12; letter-spacing: -0.022em; margin: 14px 0 12px; text-wrap: balance; }
+.tpage p { margin: 0 0 12px; max-width: 62ch; }
+.tpage ol { padding-left: 22px; margin: 0 0 12px; } .tpage ol li { margin: 6px 0; }
+.fxs { display: grid; gap: 10px; margin: 14px 0; }
+.fx { background: var(--bg2); border-radius: 16px; padding: 14px 12px; overflow-x: auto; text-align: center; font-size: 1.05em; }
+.ex { border: 1.5px solid var(--line); border-radius: 20px; padding: 16px; margin-top: 14px; }
+.ex .tag { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 6px; }
+.ex .st { margin: 10px 0 0; font-size: 16px; }
+
+.prompt { color: var(--fg2); font-size: 16px; margin: 10px 0 0; }
+.q { background: var(--bg2); border-radius: 22px; padding: 22px 12px; margin: 12px 0 16px; text-align: center; font-size: 1.28em; overflow-x: auto; min-height: 90px; display: flex; align-items: center; justify-content: center; }
+.q mjx-container { margin: 0 !important; }
+.field { display: flex; align-items: center; gap: 10px; border: 2px solid var(--line); border-radius: 16px; padding: 4px 14px; background: var(--bg); transition: border-color .15s, box-shadow .15s; }
+.field:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.field.bad { border-color: var(--bad); box-shadow: 0 0 0 4px var(--bad-soft); }
+.field.good { border-color: var(--ok); box-shadow: 0 0 0 4px var(--ok-soft); }
+.field label { font-weight: 600; color: var(--fg2); white-space: nowrap; font-size: 16px; }
+.field input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--fg); font: 500 19px var(--mono); padding: 12px 0; }
+.pv { min-height: 46px; color: var(--fg2); font-size: 15px; padding: 8px 4px 2px; overflow-x: auto; display: flex; align-items: center; gap: 8px; }
+.pv .lbl { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg3); flex: none; }
+.pv.err { color: var(--fg3); }
+.keys { display: flex; gap: 8px; overflow-x: auto; padding: 6px 0 10px; scrollbar-width: none; }
+.keys::-webkit-scrollbar { display: none; }
+.keys button { flex: 0 0 auto; min-width: 46px; height: 42px; padding: 0 12px; border: 0; border-radius: 12px; background: var(--bg2); font: 600 16px var(--font); cursor: pointer; }
+.keys button:active { background: var(--line); }
+
+.fb { border-radius: 18px; padding: 14px 16px; margin-bottom: 12px; font-size: 16px; animation: rise .22s ease-out; }
+.fb b { display: block; font-size: 18px; margin-bottom: 2px; }
+.fb.ok { background: var(--ok-soft); color: var(--ok); }
+.fb.bad { background: var(--bad-soft); color: var(--bad); }
+.fb .hintbtn { margin-top: 8px; }
+.sol { background: var(--bg2); border-radius: 18px; padding: 14px 16px; margin: 10px 0 0; font-size: 16px; color: var(--fg); }
+.sol p { margin: 0 0 8px; } .sol .fin { background: var(--bg); border-radius: 12px; padding: 10px; text-align: center; overflow-x: auto; margin-top: 8px; }
+.hint { background: var(--accent-soft); color: var(--fg); border-radius: 14px; padding: 10px 14px; margin-top: 10px; font-size: 15px; }
+
+.done-screen { text-align: center; padding: 28px 4px 8px; }
+.done-screen .big { width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 14px; font-size: 44px; background: var(--accent-soft); color: var(--accent); animation: pop .5s cubic-bezier(.2, 1.4, .4, 1); }
+.done-screen .big.warn { background: var(--bg2); color: var(--fg2); }
+@keyframes pop { from { transform: scale(0.4); opacity: 0; } }
+.done-screen h2 { font-size: 30px; letter-spacing: -0.02em; margin: 0 0 6px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 22px 0 8px; }
+.stat { background: var(--bg2); border-radius: 18px; padding: 14px 6px; }
+.stat b { display: block; font-size: 24px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 13px; color: var(--fg2); }
+.mj-wait { visibility: hidden; }
+mjx-container { max-width: 100%; }
+mjx-container[display="true"] { margin: 0.4em 0 !important; overflow-x: auto; overflow-y: hidden; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (max-width: 380px) { h1 { font-size: 30px; } .tpage h3 { font-size: 26px; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+.prompt p { margin: 0; }
+.hint p { margin: 0; }
+
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+<script>window.MathJax={tex:{inlineMath:[['$','$']],displayMath:[['$$','$$']]},svg:{fontCache:'none'},options:{enableMenu:false},startup:{typeset:false}};</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<script>
+/* Motor matemático: analizador de expresiones, evaluación numérica,
+   conversión a LaTeX y comprobación de respuestas. Sin dependencias. */
+(function (root) {
+'use strict';
+
+/* ---------- utilidades para generadores ---------- */
+const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const nz = (a, b) => { let v = 0; while (v === 0) v = ri(a, b); return v; };
+const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a || 1; };
+const fr = (n, d = 1) => { if (d < 0) { n = -n; d = -d; } const g = gcd(n, d); return [n / g, d / g]; };
+const asFr = (c) => Array.isArray(c) ? fr(c[0], c[1]) : fr(c, 1);
+const fadd = (a, b) => fr(a[0] * b[1] + b[0] * a[1], a[1] * b[1]);
+const fmul = (a, b) => fr(a[0] * b[0], a[1] * b[1]);
+const fneg = (a) => [-a[0], a[1]];
+const fsub = (a, b) => fadd(a, fneg(b));
+const fstr = (a) => a[1] === 1 ? String(a[0]) : (a[0] < 0 ? '-' : '') + Math.abs(a[0]) + '/' + a[1];
+const sgn = (v) => v < 0 ? -1 : 1;
+
+// x, x^n (n=0 -> constante)
+const xp = (n) => n === 0 ? '' : n === 1 ? 'x' : 'x^' + n;
+const kx = (k) => k === 1 ? 'x' : k === -1 ? '-x' : k + '*x';
+const ek = (k) => k === 1 ? 'e^x' : k === -1 ? 'e^(-x)' : 'e^(' + k + '*x)';
+const xm = (a) => a === 0 ? 'x' : a > 0 ? 'x-' + a : 'x+' + (-a);
+// coeficiente delante de un cuerpo
+const cx = (a, body) => a === 1 ? body : a === -1 ? '-' + body : a + '*' + body;
+// suma de términos [coef, cuerpo]; coef número o [n,d]; cuerpo '' = constante
+function terms(list) {
+  let out = '';
+  for (const [c0, body] of list) {
+    const c = asFr(c0);
+    if (c[0] === 0) continue;
+    const neg = c[0] < 0, n = Math.abs(c[0]), d = c[1];
+    let s;
+    if (body === '') s = d === 1 ? String(n) : '(' + n + '/' + d + ')';
+    else if (n === 1 && d === 1) s = body;
+    else if (d === 1) s = n + '*' + body;
+    else s = '(' + n + '/' + d + ')*' + body;
+    out += (out === '' ? (neg ? '-' : '') : (neg ? '-' : '+')) + s;
+  }
+  return out || '0';
+}
+// término "coef / den" (numerador c, denominador den); coef número o fracción
+function ov(c0, den) {
+  const c = asFr(c0);
+  const d = c[1] === 1 ? den : '(' + c[1] + '*' + den + ')';
+  return [sgn(c[0]), Math.abs(c[0]) + '/' + d];
+}
+const lin = (a, b) => terms([[a, 'x'], [b, '']]);
+// elige un generador según el nivel d (0..1), de fácil a difícil
+function byLevel(subs, d) {
+  const i = Math.min(subs.length - 1, Math.floor((d * 0.75 + Math.random() * 0.4) * subs.length));
+  return subs[Math.max(0, i)];
+}
+
+/* ---------- analizador ---------- */
+const NAMES = ['arcsin', 'arccos', 'arctan', 'arcsen', 'arctg', 'asin', 'acos', 'atan', 'sqrt', 'raiz',
+  'sin', 'sen', 'cos', 'tan', 'exp', 'log', 'abs', 'ln', 'tg', 'pi', 'x', 'e', 'c', 'k'];
+const FUNCS = { sin: 'sin', sen: 'sin', cos: 'cos', tan: 'tan', tg: 'tan', ln: 'ln', log: 'ln', exp: 'exp',
+  sqrt: 'sqrt', raiz: 'sqrt', abs: 'abs', arctan: 'atan', arctg: 'atan', atan: 'atan',
+  arcsin: 'asin', arcsen: 'asin', asin: 'asin', arccos: 'acos', acos: 'acos' };
+
+function tokenize(src) {
+  const s = String(src).replace(/²/g, '^2').replace(/³/g, '^3').replace(/[·×]/g, '*').replace(/[−–]/g, '-')
+    .replace(/÷/g, '/').replace(/π/g, 'pi').replace(/√/g, 'sqrt').replace(/,/g, '.').toLowerCase();
+  const out = []; let i = 0;
+  while (i < s.length) {
+    const ch = s[i];
+    if (/\s/.test(ch)) { i++; continue; }
+    if (/[0-9.]/.test(ch)) {
+      let j = i; while (j < s.length && /[0-9.]/.test(s[j])) j++;
+      const t = s.slice(i, j);
+      if ((t.match(/\./g) || []).length > 1 || t === '.') throw new Error('Número mal escrito');
+      out.push({ t: 'num', v: parseFloat(t) }); i = j; continue;
+    }
+    if ('+-*/^()|'.includes(ch)) { out.push({ t: ch }); i++; continue; }
+    if (/[a-z]/.test(ch)) {
+      const f = NAMES.find((n) => s.startsWith(n, i));
+      if (!f) throw new Error('No entiendo «' + ch + '»');
+      out.push({ t: 'id', v: f }); i += f.length; continue;
+    }
+    throw new Error('Símbolo no válido «' + ch + '»');
+  }
+  return out;
+}
+
+function parse(src) {
+  const tk = tokenize(src); let p = 0, absDepth = 0;
+  const peek = () => tk[p], next = () => tk[p++];
+  const isStart = (t) => t && (t.t === 'num' || t.t === 'id' || t.t === '(' || (t.t === '|' && absDepth === 0));
+  const closeParen = () => { if (!peek() || peek().t !== ')') throw new Error('Falta cerrar un paréntesis'); next(); };
+  function expr() {
+    let a = term();
+    while (peek() && (peek().t === '+' || peek().t === '-')) {
+      const o = next().t; const b = term(); a = { k: o === '+' ? 'add' : 'sub', a, b };
+    }
+    return a;
+  }
+  function term() {
+    let a = unary();
+    for (;;) {
+      const t = peek();
+      if (t && (t.t === '*' || t.t === '/')) { next(); const b = unary(); a = { k: t.t === '*' ? 'mul' : 'div', a, b }; }
+      else if (isStart(t)) { const b = power(); a = { k: 'mul', a, b, imp: true }; }
+      else break;
+    }
+    return a;
+  }
+  function unary() {
+    const t = peek();
+    if (t && t.t === '-') { next(); return { k: 'neg', a: unary() }; }
+    if (t && t.t === '+') { next(); return unary(); }
+    return power();
+  }
+  function power() {
+    const a = atom();
+    if (peek() && peek().t === '^') { next(); return { k: 'pow', a, b: unary() }; }
+    return a;
+  }
+  function bare() {
+    const t = peek();
+    if (!t || !(t.t === 'num' || t.t === 'id' || t.t === '|')) throw new Error('Falta el argumento de la función');
+    let a = power();
+    for (;;) {
+      const q = peek();
+      if (q && (q.t === 'num' || (q.t === 'id' && !FUNCS[q.v]))) a = { k: 'mul', a, b: power(), imp: true };
+      else break;
+    }
+    return a;
+  }
+  function atom() {
+    const t = next();
+    if (!t) throw new Error('Falta algo al final');
+    if (t.t === 'num') return { k: 'num', v: t.v };
+    if (t.t === '(') { const e = expr(); closeParen(); return e; }
+    if (t.t === '|') {
+      absDepth++; const e = expr();
+      if (!peek() || peek().t !== '|') throw new Error('Falta cerrar |…|');
+      next(); absDepth--; return { k: 'fn', name: 'abs', a: e };
+    }
+    if (t.t === 'id') {
+      if (t.v === 'x') return { k: 'var' };
+      if (t.v === 'pi' || t.v === 'e') return { k: 'const', name: t.v };
+      if (t.v === 'c' || t.v === 'k') return { k: 'const', name: 'c' };
+      let ex = null;
+      if (peek() && peek().t === '^') {
+        next(); const q = next();
+        if (!q || q.t !== 'num') throw new Error('Exponente no válido tras la función');
+        ex = q.v;
+      }
+      let arg;
+      if (peek() && peek().t === '(') { next(); arg = expr(); closeParen(); } else arg = bare();
+      const node = { k: 'fn', name: FUNCS[t.v], a: arg };
+      return ex !== null ? { k: 'pow', a: node, b: { k: 'num', v: ex } } : node;
+    }
+    throw new Error('Expresión mal formada');
+  }
+  const ast = expr();
+  if (p < tk.length) throw new Error('Sobra «' + (tk[p].v !== undefined ? tk[p].v : tk[p].t) + '»');
+  return ast;
+}
+
+/* ---------- evaluación ---------- */
+function ev(n, x) {
+  switch (n.k) {
+    case 'num': return n.v;
+    case 'var': return x;
+    case 'const': return n.name === 'pi' ? Math.PI : n.name === 'e' ? Math.E : 0.7123;
+    case 'neg': return -ev(n.a, x);
+    case 'add': return ev(n.a, x) + ev(n.b, x);
+    case 'sub': return ev(n.a, x) - ev(n.b, x);
+    case 'mul': return ev(n.a, x) * ev(n.b, x);
+    case 'div': return ev(n.a, x) / ev(n.b, x);
+    case 'pow': return Math.pow(ev(n.a, x), ev(n.b, x));
+    case 'fn': {
+      const v = ev(n.a, x);
+      switch (n.name) {
+        case 'sin': return Math.sin(v); case 'cos': return Math.cos(v); case 'tan': return Math.tan(v);
+        case 'ln': return v > 0 ? Math.log(v) : NaN; case 'exp': return Math.exp(v);
+        case 'sqrt': return v >= 0 ? Math.sqrt(v) : NaN; case 'abs': return Math.abs(v);
+        case 'atan': return Math.atan(v); case 'asin': return Math.asin(v); case 'acos': return Math.acos(v);
+      }
+    }
+  }
+  return NaN;
+}
+const fn = (src) => { const ast = typeof src === 'string' ? parse(src) : src; return (x) => ev(ast, x); };
+function hasVar(n) {
+  if (n.k === 'var') return true;
+  return ['a', 'b'].some((q) => n[q] && hasVar(n[q]));
+}
+const deriv = (u, x) => { const h = 1e-5 * Math.max(1, Math.abs(x)); return (u(x + h) - u(x - h)) / (2 * h); };
+function quad(f, a, b, n = 4000) {
+  const h = (b - a) / n; let s = f(a) + f(b);
+  for (let i = 1; i < n; i++) s += f(a + i * h) * (i % 2 ? 4 : 2);
+  return s * h / 3;
+}
+const samplePts = (dom) => [0.07, 0.19, 0.33, 0.47, 0.61, 0.78, 0.93].map((t) => dom[0] + (dom[1] - dom[0]) * t);
+
+/* ---------- LaTeX ---------- */
+const FN_TEX = { sin: '\\operatorname{sen}', cos: '\\cos', tan: '\\operatorname{tg}', ln: '\\ln',
+  atan: '\\operatorname{arctg}', asin: '\\operatorname{arcsen}', acos: '\\arccos' };
+const numTex = (v) => Number.isInteger(v) ? String(v) : String(+v.toFixed(6)).replace('.', '{,}');
+function isNeg(n) {
+  switch (n.k) { case 'neg': return true; case 'num': return n.v < 0; case 'mul': case 'div': return isNeg(n.a); default: return false; }
+}
+function stripNeg(n) {
+  switch (n.k) {
+    case 'neg': return n.a; case 'num': return { k: 'num', v: -n.v };
+    case 'mul': case 'div': return Object.assign({}, n, { a: stripNeg(n.a) });
+    default: return n;
+  }
+}
+function prec(n) {
+  switch (n.k) { case 'add': case 'sub': return 1; case 'neg': return 2; case 'mul': case 'div': return 3; case 'pow': case 'fn': return 4; default: return 5; }
+}
+const wrap = (n, need) => prec(n) < need ? '\\left(' + tx(n) + '\\right)' : tx(n);
+const startsNum = (n) => n.k === 'num' || n.k === 'div' || ((n.k === 'pow' || n.k === 'mul') && startsNum(n.a));
+function fnTex(n, sup) {
+  const a = n.a;
+  if (n.name === 'sqrt') return '\\sqrt{' + tx(a) + '}';
+  if (n.name === 'abs') return '\\left|' + tx(a) + '\\right|';
+  if (n.name === 'exp') return 'e^{' + tx(a) + '}';
+  const nm = FN_TEX[n.name] + (sup || '');
+  if (a.k === 'fn' && a.name === 'abs') return nm + tx(a);
+  const atom = a.k === 'var' || a.k === 'num' || a.k === 'const';
+  return nm + (atom ? '(' + tx(a) + ')' : '\\left(' + tx(a) + '\\right)');
+}
+function tx(n) {
+  switch (n.k) {
+    case 'num': return numTex(n.v);
+    case 'var': return 'x';
+    case 'const': return n.name === 'pi' ? '\\pi' : n.name === 'e' ? 'e' : 'C';
+    case 'neg': return '-' + wrap(n.a, 3);
+    case 'add': return tx(n.a) + (isNeg(n.b) ? ' - ' + wrap(stripNeg(n.b), 3) : ' + ' + tx(n.b));
+    case 'sub': return tx(n.a) + ' - ' + wrap(n.b, 3);
+    case 'mul':
+      if (isNeg(n)) return '-' + wrap(stripNeg(n), 3);
+      return wrap(n.a, 3) + (startsNum(n.b) ? '\\cdot ' : '') + wrap(n.b, 3);
+    case 'div':
+      if (isNeg(n)) return '-' + tx(stripNeg(n));
+      return '\\frac{' + tx(n.a) + '}{' + tx(n.b) + '}';
+    case 'pow': {
+      const b = n.a;
+      if (b.k === 'fn' && !['sqrt', 'abs', 'exp'].includes(b.name)) return fnTex(b, '^{' + tx(n.b) + '}');
+      return wrap(b, 5) + '^{' + tx(n.b) + '}';
+    }
+    case 'fn': return fnTex(n);
+  }
+  return '';
+}
+const LATEX = (src) => tx(typeof src === 'string' ? parse(src) : src);
+const L = (src) => '$' + LATEX(src) + '$';
+function intTex(f, a, b) {
+  const ast = parse(f);
+  const sum = ast.k === 'add' || ast.k === 'sub' || (ast.k === 'neg' && (ast.a.k === 'add' || ast.a.k === 'sub'));
+  const body = sum ? '\\left(' + tx(ast) + '\\right)' : tx(ast);
+  const lim = a != null ? '_{' + LATEX(a) + '}^{' + LATEX(b) + '}' : '';
+  return '\\int' + lim + ' ' + body + '\\,dx';
+}
+
+/* ---------- comprobación de respuestas ---------- */
+function preview(input) {
+  if (!String(input).trim()) return { ok: true, tex: '' };
+  try { return { ok: true, tex: LATEX(parse(input)) }; } catch (e) { return { ok: false, msg: e.message }; }
+}
+
+function check(ex, input) {
+  input = String(input || '').trim();
+  if (!input) return { ok: false, empty: true, msg: 'Escribe tu respuesta.' };
+  let ast; try { ast = parse(input); } catch (e) { return { ok: false, err: true, msg: e.message }; }
+  const u = (x) => ev(ast, x);
+
+  if (ex.kind === 'num') {
+    if (hasVar(ast)) return { ok: false, err: true, msg: 'Aquí la respuesta es un número, sin x.' };
+    const t = fn(ex.value)(0), uv = u(0);
+    if (!isFinite(uv)) return { ok: false, err: true, msg: 'Esa expresión no se puede calcular.' };
+    if (Math.abs(uv - t) <= 1e-9 * Math.max(1, Math.abs(t))) return { ok: true };
+    const ds = [...input.matchAll(/[.,](\d+)/g)].map((m) => m[1].length);
+    if (ds.length) {
+      const d = Math.max(...ds);
+      if (Math.abs(uv - t) <= 0.5 * Math.pow(10, -d) + 1e-9) return { ok: true, approx: true };
+    }
+    if (Math.abs(uv + t) <= 1e-9 * Math.max(1, Math.abs(t))) return { ok: false, msg: 'Casi: revisa el signo.' };
+    return { ok: false, msg: 'No coincide. Revisa los cálculos.' };
+  }
+
+  const f = fn(ex.f), pts = samplePts(ex.dom || [0.3, 2.5]);
+  if (ex.kind === 'func') {
+    for (const x of pts) {
+      const a = u(x), b = f(x);
+      if (!isFinite(a)) return { ok: false, msg: 'Tu expresión no está definida en parte del dominio.' };
+      if (Math.abs(a - b) > 1e-6 * Math.max(1, Math.abs(b))) return { ok: false, msg: 'No es la derivada correcta.' };
+    }
+    return { ok: true };
+  }
+  // kind === 'anti': comprobar que F' = f
+  const ratios = []; let bad = false;
+  for (const x of pts) {
+    const dv = deriv(u, x), fx = f(x);
+    if (!isFinite(dv)) return { ok: false, msg: 'Tu expresión no está definida en parte del dominio (¿logaritmo de algo negativo?).' };
+    const tol = 2e-5 * Math.max(1, Math.abs(fx), Math.abs(u(x)) * 1e-2);
+    if (Math.abs(dv - fx) > tol) bad = true;
+    if (Math.abs(fx) > 1e-6) ratios.push(dv / fx);
+  }
+  if (!bad) return { ok: true };
+  if (ratios.length > 3) {
+    const m = ratios.reduce((s, r) => s + r, 0) / ratios.length;
+    if (ratios.every((r) => Math.abs(r - m) < 1e-4 * Math.abs(m)) && Math.abs(m - 1) > 1e-3) {
+      return { ok: false, msg: 'Casi: al derivar tu resultado sale ' + (+m.toFixed(4)).toString().replace('.', ',') +
+        ' veces el integrando. Revisa los coeficientes.' };
+    }
+  }
+  return { ok: false, msg: 'No es una primitiva: al derivar tu resultado no sale el integrando.' };
+}
+
+root.Engine = { ri, pick, nz, gcd, fr, fadd, fmul, fneg, fsub, fstr, sgn, xp, kx, ek, xm, cx, terms, ov, lin, byLevel,
+  parse, ev, fn, hasVar, deriv, quad, samplePts, LATEX, L, intTex, preview, check, tx };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* Temas 1-4: derivadas, potencias, inmediatas, composición lineal */
+(function (root) {
+'use strict';
+const E = root.Engine;
+const { ri, pick, nz, fr, xp, kx, ek, terms, ov, lin, byLevel, L, LATEX: T } = E;
+
+const Kit = {
+  anti: (f, F, o) => Object.assign({ kind: 'anti', f, sol: F, dom: [0.4, 3], prompt: 'Calcula la integral indefinida.',
+    qtex: E.intTex(f), label: 'F(x) =', hint: '', steps: [] }, o),
+  func: (base, f, o) => Object.assign({ kind: 'func', base, f, sol: f, dom: [0.3, 2.5], prompt: 'Calcula la derivada de la función.',
+    qtex: 'f(x)=' + T(base), label: "f′(x) =", hint: '', steps: [] }, o),
+  num: (value, qtex, o) => Object.assign({ kind: 'num', value, sol: value, prompt: 'Calcula el valor exacto.',
+    qtex, label: 'Resultado =', hint: '', steps: [] }, o),
+};
+root.Kit = Kit;
+root.Topics = root.Topics || [];
+
+/* ---------- 1. Derivadas ---------- */
+const D = [
+  () => {
+    const n = ri(3, 5), m = ri(1, n - 1), a = nz(-5, 5), b = nz(-6, 6), c = ri(-5, 5);
+    const base = terms([[a, xp(n)], [b, xp(m)], [c, '']]);
+    const f = terms([[a * n, xp(n - 1)], [b * m, xp(m - 1)]]);
+    return Kit.func(base, f, { hint: 'Cada término $ax^n$ pasa a $n\\,a\\,x^{n-1}$ y la constante desaparece.',
+      steps: ['Derivamos término a término: se baja el exponente multiplicando y se resta 1.', 'Resultado: ' + L(f)] });
+  },
+  () => {
+    const k = pick([1, 2, 3, -1, -2]), a = nz(-4, 4);
+    const base = terms([[a, ek(k)]]), f = terms([[a * k, ek(k)]]);
+    return Kit.func(base, f, { hint: 'La derivada de $e^{kx}$ es $k\\,e^{kx}$.',
+      steps: ['La exponencial se queda igual y se multiplica por la derivada del exponente, que es $' + k + '$.', 'Resultado: ' + L(f)] });
+  },
+  () => {
+    const a = nz(-4, 4), b = nz(-3, 3), n = ri(2, 4);
+    const base = terms([[a, 'ln(x)'], [b, xp(n)]]);
+    const f = terms([ov(a, 'x'), [b * n, xp(n - 1)]]);
+    return Kit.func(base, f, { hint: 'La derivada de $\\ln x$ es $\\frac{1}{x}$.',
+      steps: ['$(\\ln x)\'=\\frac{1}{x}$ y $(x^n)\'=nx^{n-1}$.', 'Resultado: ' + L(f)] });
+  },
+  () => {
+    const k = ri(1, 4), a = nz(-4, 4), b = nz(-4, 4);
+    const base = terms([[a, `sin(${kx(k)})`], [b, `cos(${kx(k)})`]]);
+    const f = terms([[a * k, `cos(${kx(k)})`], [-b * k, `sin(${kx(k)})`]]);
+    return Kit.func(base, f, { hint: '$(\\operatorname{sen}u)\'=u\'\\cos u$ y $(\\cos u)\'=-u\'\\operatorname{sen}u$.',
+      steps: ['Regla de la cadena: derivada de fuera por derivada de dentro (que vale $' + k + '$).', 'Resultado: ' + L(f)] });
+  },
+  () => {
+    const n = ri(3, 5), a = nz(-3, 3), b = nz(-4, 4), l = lin(a, b);
+    const base = `(${l})^${n}`, f = `${n * a}*(${l})^${n - 1}`;
+    return Kit.func(base, f, { hint: 'Regla de la cadena: $n\\,u^{n-1}\\cdot u\'$ con $u=' + T(l) + '$.',
+      steps: ['Aquí $u=' + T(l) + '$ y $u\'=' + a + '$.', '$n\\,u^{n-1}u\'$ da: ' + L(f)] });
+  },
+  () => {
+    const t = ri(0, 3); let base, f, why;
+    if (t === 0) { const m = ri(2, 3); base = `e^(x^${m})`; f = `${m}*${xp(m - 1)}*e^(x^${m})`; why = 'La exponencial se repite y se multiplica por la derivada del exponente.'; }
+    else if (t === 1) { const c = ri(1, 5); base = `ln(x^2+${c})`; f = `2*x/(x^2+${c})`; why = '$(\\ln u)\'=\\frac{u\'}{u}$.'; }
+    else if (t === 2) { base = 'sin(x^2)'; f = '2*x*cos(x^2)'; why = 'Derivada de fuera, $\\cos(x^2)$, por derivada de dentro, $2x$.'; }
+    else { const c = ri(1, 5); base = `sqrt(x^2+${c})`; f = `x/sqrt(x^2+${c})`; why = '$(\\sqrt{u})\'=\\frac{u\'}{2\\sqrt{u}}$.'; }
+    return Kit.func(base, f, { hint: 'Regla de la cadena.', steps: [why, 'Resultado: ' + L(f)] });
+  },
+  () => {
+    const t = ri(0, 2); let base, f;
+    if (t === 0) { const k = pick([1, 2, -1]); base = `x*${ek(k)}`; f = `(${terms([[k, 'x'], [1, '']])})*${ek(k)}`; }
+    else if (t === 1) { base = 'x*sin(x)'; f = 'sin(x)+x*cos(x)'; }
+    else { const n = ri(2, 3); base = `${xp(n)}*ln(x)`; f = `${n}*${xp(n - 1)}*ln(x)+${xp(n - 1)}`; }
+    return Kit.func(base, f, { hint: 'Producto: $(uv)\'=u\'v+uv\'$.',
+      steps: ['Aplicamos $(uv)\'=u\'v+uv\'$.', 'Resultado: ' + L(f)] });
+  },
+  () => {
+    const t = ri(0, 2); let base, f;
+    if (t === 0) { const k = ri(1, 4); base = `x/(x+${k})`; f = `${k}/(x+${k})^2`; }
+    else if (t === 1) { const k = ri(1, 4); base = `x^2/(x+${k})`; f = `(x^2+${2 * k}*x)/(x+${k})^2`; }
+    else { base = 'e^x/x'; f = 'e^x*(x-1)/x^2'; }
+    return Kit.func(base, f, { hint: 'Cociente: $\\left(\\frac{u}{v}\\right)\'=\\frac{u\'v-uv\'}{v^2}$.',
+      steps: ['Aplicamos la regla del cociente.', 'Resultado: ' + L(f)] });
+  },
+];
+
+/* ---------- 2. Primitivas de potencias ---------- */
+const PW = {
+  pow: (a, n) => ({ f: [a, xp(n)], F: [fr(a, n + 1), xp(n + 1)] }),
+  neg: (a, n) => ({ f: ov(a, 'x^' + n), F: ov(fr(-a, n - 1), xp(n - 1)) }),
+  sqrt: (a) => ({ f: [a, 'sqrt(x)'], F: [fr(2 * a, 3), 'x^(3/2)'] }),
+  isq: (a) => ({ f: ov(a, 'sqrt(x)'), F: [2 * a, 'sqrt(x)'] }),
+  cbrt: (a) => ({ f: [a, 'x^(1/3)'], F: [fr(3 * a, 4), 'x^(4/3)'] }),
+  cte: (c) => ({ f: [c, ''], F: [c, 'x'] }),
+};
+function potEx(pieces, extra) {
+  const f = terms(pieces.map((p) => p.f)), F = terms(pieces.map((p) => p.F));
+  return Kit.anti(f, F, Object.assign({
+    hint: 'Reescribe raíces y fracciones como potencias de $x$ y aplica $\\int x^n dx=\\frac{x^{n+1}}{n+1}$.',
+    steps: ['Pasamos todo a potencias: $\\sqrt{x}=x^{1/2}$, $\\frac{1}{x^n}=x^{-n}$.',
+      'Sumamos 1 al exponente y dividimos entre el exponente nuevo, en cada término.', 'Resultado: ' + L(F) + ' $+C$'] }, extra));
+}
+const POT = [
+  () => potEx([PW.pow(nz(-6, 6), ri(2, 5))]),
+  () => potEx([PW.pow(nz(-6, 6), ri(3, 5)), PW.pow(nz(-6, 6), ri(1, 2)), PW.cte(nz(-5, 5))]),
+  () => potEx([PW.neg(nz(-6, 6), ri(2, 4))]),
+  () => potEx([pick([PW.sqrt, PW.isq, PW.cbrt])(nz(-6, 6))]),
+  () => potEx([PW.pow(nz(-4, 4), ri(2, 4)), PW.neg(nz(-5, 5), ri(2, 3)), pick([PW.sqrt, PW.isq])(nz(-4, 4))]),
+  () => potEx([PW.pow(nz(-4, 4), ri(2, 3)), PW.neg(nz(-5, 5), ri(2, 4)), PW.isq(nz(-4, 4)), PW.cte(nz(-4, 4))]),
+];
+
+/* ---------- 3. Inmediatas ---------- */
+const EL = [
+  (a) => ({ f: [a, 'e^x'], F: [a, 'e^x'] }),
+  (a) => ({ f: [a, 'sin(x)'], F: [-a, 'cos(x)'] }),
+  (a) => ({ f: [a, 'cos(x)'], F: [a, 'sin(x)'] }),
+  (a) => ({ f: ov(a, 'x'), F: [a, 'ln(abs(x))'] }),
+  (a) => ({ f: ov(a, 'cos(x)^2'), F: [a, 'tan(x)'] }),
+  (a) => ({ f: ov(a, '(1+x^2)'), F: [a, 'atan(x)'] }),
+  (a) => ({ f: [a, '2^x'], F: [a, '2^x/ln(2)'] }),
+  (a) => ({ f: ov(a, 'sqrt(1-x^2)'), F: [a, 'asin(x)'] }),
+];
+function elemEx(idx) {
+  const ps = idx.map((i) => EL[i](nz(-5, 5)));
+  const f = terms(ps.map((p) => p.f)), F = terms(ps.map((p) => p.F));
+  return Kit.anti(f, F, { dom: [0.15, 0.9],
+    hint: 'Usa la tabla de primitivas inmediatas, término a término. Recuerda el signo de $\\int\\operatorname{sen}x\\,dx$.',
+    steps: ['Cada término es una integral de la tabla; los coeficientes salen fuera.', 'Resultado: ' + L(F) + ' $+C$'] });
+}
+const sample = (arr, n) => { const a = arr.slice(), o = []; while (o.length < n) o.push(a.splice(ri(0, a.length - 1), 1)[0]); return o; };
+const ELEM = [
+  () => elemEx([pick([0, 1, 2, 3])]),
+  () => elemEx(sample([0, 1, 2, 3], 2)),
+  () => elemEx(sample([0, 1, 2, 3, 4, 5, 6, 7], 2)),
+  () => elemEx(sample([0, 1, 2, 3, 4, 5, 6, 7], 3)),
+];
+
+/* ---------- 4. Composición lineal ---------- */
+function linEx(f, F, a, l, what) {
+  return Kit.anti(f, F, { dom: [0.2, 2],
+    hint: 'Integra como si dentro hubiera solo $x$ y divide entre la derivada de lo de dentro, que es $' + a + '$.',
+    steps: ['Dentro hay $u=' + T(l) + '$, con $u\'=' + a + '$.', what, 'Resultado: ' + L(F) + ' $+C$'] });
+}
+const LIN = [
+  () => { const a = pick([2, 3, 4, 5, -1, -2, -3]), b = nz(-3, 4), c = pick([1, 1, 2, -1]), l = lin(a, b);
+    return linEx(terms([[c, `e^(${l})`]]), terms([[fr(c, a), `e^(${l})`]]), a, l, 'La exponencial se integra igual, pero hay que dividir entre $' + a + '$.'); },
+  () => { const a = pick([2, 3, 4, 5, -1, -2, -3]), b = nz(-3, 4), c = pick([1, 1, 2, 3, -1]), l = lin(a, b);
+    return pick([0, 1]) ? linEx(terms([[c, `sin(${l})`]]), terms([[fr(-c, a), `cos(${l})`]]), a, l, '$\\int\\operatorname{sen}u\\,du=-\\cos u$; dividimos entre $' + a + '$.')
+      : linEx(terms([[c, `cos(${l})`]]), terms([[fr(c, a), `sin(${l})`]]), a, l, '$\\int\\cos u\\,du=\\operatorname{sen}u$; dividimos entre $' + a + '$.'); },
+  () => { const a = pick([2, 3, 4, -1, -2, -3]), b = nz(-3, 4), n = ri(2, 5), c = pick([1, 1, 2, -1]), l = lin(a, b);
+    return linEx(terms([[c, `(${l})^${n}`]]), terms([[fr(c, a * (n + 1)), `(${l})^${n + 1}`]]), a, l, 'Subimos el exponente a $' + (n + 1) + '$ y dividimos entre $' + (n + 1) + '\\cdot' + (a < 0 ? '(' + a + ')' : a) + '$.'); },
+  () => { const a = ri(2, 5), b = ri(1, 4), c = pick([1, 2, 3, -1]), l = lin(a, b);
+    return linEx(terms([ov(c, `(${l})`)]), terms([[fr(c, a), `ln(abs(${l}))`]]), a, l, '$\\int\\frac{du}{u}=\\ln|u|$; dividimos entre $' + a + '$.'); },
+  () => { const a = ri(2, 4), b = ri(1, 4), n = ri(2, 3), c = pick([1, 2, 3, -1]), l = lin(a, b);
+    const den = n - 1 === 1 ? `(${l})` : `(${l})^${n - 1}`;
+    return linEx(terms([ov(c, `(${l})^${n}`)]), terms([ov(fr(-c, a * (n - 1)), den)]), a, l, 'Es $u^{-' + n + '}$: subimos a $u^{-' + (n - 1) + '}$ y dividimos entre $-' + (n - 1) + '\\cdot' + a + '$.'); },
+  () => { const a = ri(1, 4), b = ri(1, 5), c = pick([1, 2, 3]), l = lin(a, b);
+    return linEx(terms([[c, `sqrt(${l})`]]), terms([[fr(2 * c, 3 * a), `(${l})^(3/2)`]]), a, l, '$\\sqrt{u}=u^{1/2}$ se integra a $\\frac{2}{3}u^{3/2}$; dividimos entre $' + a + '$.'); },
+];
+
+root.Topics.push(
+  { id: 'deriv', island: 'Repaso', title: 'Derivadas', sub: 'La base para integrar', gen: (d) => byLevel(D, d)() },
+  { id: 'pot', island: 'Primitivas', title: 'Potencias', sub: 'Polinomios, raíces y fracciones', gen: (d) => byLevel(POT, d)() },
+  { id: 'elem', island: 'Primitivas', title: 'Inmediatas', sub: 'Exponencial, trigonométricas y más', gen: (d) => byLevel(ELEM, d)() },
+  { id: 'lin', island: 'Primitivas', title: 'Función de ax+b', sub: 'Dividir entre lo de dentro', gen: (d) => byLevel(LIN, d)() },
+);
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* Temas 5-7: cambio de variable, partes, fracciones simples */
+(function (root) {
+'use strict';
+const E = root.Engine, Kit = root.Kit;
+const { ri, pick, nz, fr, xp, ek, xm, cx, terms, byLevel, L, LATEX: T } = E;
+const par = (v) => v < 0 ? '(' + v + ')' : String(v);
+
+/* ---------- 5. Cambio de variable ---------- */
+const SU = [
+  () => { // a x (x²+k)^n
+    const a = pick([1, 2, 3, 4, -2]), k = nz(-3, 4), n = ri(2, 4), q = terms([[1, 'x^2'], [k, '']]);
+    const f = terms([[a, `x*(${q})^${n}`]]), F = terms([[fr(a, 2 * (n + 1)), `(${q})^${n + 1}`]]);
+    return Kit.anti(f, F, { dom: [0.2, 1.4], hint: 'Prueba con $u=' + T(q) + '$: su derivada $2x$ aparece (salvo constante) en la integral.',
+      steps: ['Tomamos $u=' + T(q) + '$, luego $du=2x\\,dx$ y $x\\,dx=\\frac{du}{2}$.',
+        'La integral pasa a $\\frac{' + a + '}{2}\\int u^{' + n + '}\\,du=\\frac{' + a + '}{2}\\cdot\\frac{u^{' + (n + 1) + '}}{' + (n + 1) + '}$.', 'Deshacemos el cambio: ' + L(F) + ' $+C$'] });
+  },
+  () => { // a x^(m-1) e^(x^m)
+    const a = pick([1, 2, 3, -1]), m = ri(2, 3);
+    const f = terms([[a, `${xp(m - 1)}*e^(x^${m})`]]), F = terms([[fr(a, m), `e^(x^${m})`]]);
+    return Kit.anti(f, F, { dom: [0.2, 1.4], hint: 'Elige $u=x^' + m + '$ (el exponente de la exponencial).',
+      steps: ['$u=x^' + m + '$, $du=' + m + xp(m - 1) + '\\,dx$, así que $' + xp(m - 1) + '\\,dx=\\frac{du}{' + m + '}$.',
+        'Queda $\\frac{' + a + '}{' + m + '}\\int e^u\\,du=\\frac{' + a + '}{' + m + '}e^u$.', 'Resultado: ' + L(F) + ' $+C$'] });
+  },
+  () => { // trig^n
+    const a = pick([1, 2, 3, -1]), n = ri(2, 4);
+    if (pick([0, 1])) {
+      const f = terms([[a, `cos(x)*sin(x)^${n}`]]), F = terms([[fr(a, n + 1), `sin(x)^${n + 1}`]]);
+      return Kit.anti(f, F, { dom: [0.2, 1.3], hint: 'Elige $u=\\operatorname{sen}x$; entonces $du=\\cos x\\,dx$.',
+        steps: ['$u=\\operatorname{sen}x$ y $du=\\cos x\\,dx$.', 'Queda $' + a + '\\int u^{' + n + '}du=' + a + '\\cdot\\frac{u^{' + (n + 1) + '}}{' + (n + 1) + '}$.', 'Resultado: ' + L(F) + ' $+C$'] });
+    }
+    const f = terms([[a, `sin(x)*cos(x)^${n}`]]), F = terms([[fr(-a, n + 1), `cos(x)^${n + 1}`]]);
+    return Kit.anti(f, F, { dom: [0.2, 1.3], hint: 'Elige $u=\\cos x$; entonces $du=-\\operatorname{sen}x\\,dx$.',
+      steps: ['$u=\\cos x$ y $du=-\\operatorname{sen}x\\,dx$, es decir $\\operatorname{sen}x\\,dx=-du$.', 'Queda $-' + par(a) + '\\int u^{' + n + '}du$.', 'Resultado: ' + L(F) + ' $+C$'] });
+  },
+  () => { // f'/f
+    const a = pick([1, 2, 3, 4, -2]), k = ri(1, 4), t = ri(0, 3); let f, F, u, du;
+    if (t === 0) { f = cx(a, `x/(x^2+${k})`); F = terms([[fr(a, 2), `ln(x^2+${k})`]]); u = `x^2+${k}`; du = '2x\\,dx'; }
+    else if (t === 1) { f = cx(a, `x^2/(x^3+${k})`); F = terms([[fr(a, 3), `ln(x^3+${k})`]]); u = `x^3+${k}`; du = '3x^2\\,dx'; }
+    else if (t === 2) { f = cx(a, `e^x/(e^x+${k})`); F = terms([[a, `ln(e^x+${k})`]]); u = `e^x+${k}`; du = 'e^x\\,dx'; }
+    else { f = cx(a, `cos(x)/(sin(x)+${k + 1})`); F = terms([[a, `ln(sin(x)+${k + 1})`]]); u = `sin(x)+${k + 1}`; du = '\\cos x\\,dx'; }
+    return Kit.anti(f, F, { dom: [0.2, 1.4], hint: 'El numerador es (un múltiplo de) la derivada del denominador: $\\int\\frac{u\'}{u}dx=\\ln|u|$.',
+      steps: ['Tomamos $u=' + T(u) + '$, con $du=' + du + '$.', 'La integral es un múltiplo de $\\int\\frac{du}{u}=\\ln|u|$ (el denominador es positivo).', 'Resultado: ' + L(F) + ' $+C$'] });
+  },
+  () => { // ln^n / x
+    const a = pick([1, 2, 3, -1]), n = ri(1, 3);
+    const f = terms([[a, `ln(x)^${n}/x`]]), F = terms([[fr(a, n + 1), `ln(x)^${n + 1}`]]);
+    return Kit.anti(f, F, { dom: [0.4, 3], hint: 'Elige $u=\\ln x$; su derivada es $\\frac{1}{x}$.',
+      steps: ['$u=\\ln x$ y $du=\\frac{1}{x}\\,dx$.', 'Queda $' + a + '\\int u^{' + n + '}du=' + a + '\\cdot\\frac{u^{' + (n + 1) + '}}{' + (n + 1) + '}$.', 'Resultado: ' + L(F) + ' $+C$'] });
+  },
+  () => { // e^x sqrt(e^x+k)
+    const a = pick([1, 2, 3]), k = ri(1, 3);
+    const f = terms([[a, `e^x*sqrt(e^x+${k})`]]), F = terms([[fr(2 * a, 3), `(e^x+${k})^(3/2)`]]);
+    return Kit.anti(f, F, { dom: [0.2, 1.4], hint: 'Elige $u=e^x+' + k + '$.',
+      steps: ['$u=e^x+' + k + '$ y $du=e^x\\,dx$.', 'Queda $' + a + '\\int u^{1/2}du=' + a + '\\cdot\\frac{2}{3}u^{3/2}$.', 'Resultado: ' + L(F) + ' $+C$'] });
+  },
+  () => { // tan
+    const a = pick([1, 2, 3, -1]);
+    const f = terms([[a, 'tan(x)']]), F = terms([[-a, 'ln(cos(x))']]);
+    return Kit.anti(f, F, { dom: [0.2, 1.3], hint: 'Escribe $\\operatorname{tg}x=\\frac{\\operatorname{sen}x}{\\cos x}$ y usa $u=\\cos x$.',
+      steps: ['$\\operatorname{tg}x=\\frac{\\operatorname{sen}x}{\\cos x}$. Con $u=\\cos x$, $du=-\\operatorname{sen}x\\,dx$.', 'Queda $-' + par(a) + '\\int\\frac{du}{u}=-' + par(a) + '\\ln|u|$.', 'Resultado: ' + L(F) + ' $+C$'] });
+  },
+  () => { // x sqrt(x+k)
+    const k = ri(1, 4);
+    const f = `x*sqrt(x+${k})`, F = terms([[fr(2, 5), `(x+${k})^(5/2)`], [fr(-2 * k, 3), `(x+${k})^(3/2)`]]);
+    return Kit.anti(f, F, { dom: [0.2, 2], hint: 'Elige $u=x+' + k + '$ y despeja $x=u-' + k + '$.',
+      steps: ['$u=x+' + k + '$, $x=u-' + k + '$, $dx=du$.', 'Queda $\\int(u-' + k + ')\\sqrt{u}\\,du=\\int\\left(u^{3/2}-' + k + 'u^{1/2}\\right)du$.', 'Integramos y deshacemos: ' + L(F) + ' $+C$'] });
+  },
+];
+
+/* ---------- 6. Integración por partes ---------- */
+const partesSteps = (u, dv, du, v, F) => ['Elegimos $u=' + u + '$ y $dv=' + dv + '\\,dx$ (regla ALPES).', 'Entonces $du=' + du + '\\,dx$ y $v=' + v + '$.',
+  'Aplicamos $\\int u\\,dv=uv-\\int v\\,du$ y resolvemos la integral que queda.', 'Resultado: ' + L(F) + ' $+C$'];
+const PA = [
+  () => { const a = pick([1, 2, 3, -1]), k = pick([1, 1, 2, 3, -1]);
+    const kxT = k === 1 ? 'x' : k === -1 ? '-x' : k + 'x', Ex = 'e^{' + kxT + '}', v = k === 1 ? Ex : k === -1 ? '-' + Ex : '\\frac{' + Ex + '}{' + k + '}';
+    const f = terms([[a, `x*${ek(k)}`]]), F = terms([[fr(a, k * k), `(${terms([[k, 'x'], [-1, '']])})*${ek(k)}`]]);
+    return Kit.anti(f, F, { dom: [0.2, 2], hint: 'Polinomio por exponencial: $u=x$ (el polinomio) y $dv=' + Ex + '\\,dx$.',
+      steps: partesSteps('x', Ex, '1', v, F) }); },
+  () => { const a = pick([1, 2, 3, -1]), k = ri(1, 3);
+    if (pick([0, 1])) { const f = terms([[a, `x*sin(${E.kx(k)})`]]), F = terms([[fr(-a, k), `x*cos(${E.kx(k)})`], [fr(a, k * k), `sin(${E.kx(k)})`]]);
+      return Kit.anti(f, F, { dom: [0.2, 2], hint: '$u=x$ y $dv=\\operatorname{sen}(' + (k === 1 ? '' : k) + 'x)\\,dx$.',
+        steps: partesSteps('x', '\\operatorname{sen}(' + (k === 1 ? '' : k) + 'x)', '1', '-\\frac{\\cos(' + (k === 1 ? '' : k) + 'x)}{' + k + '}', F) }); }
+    const f = terms([[a, `x*cos(${E.kx(k)})`]]), F = terms([[fr(a, k), `x*sin(${E.kx(k)})`], [fr(a, k * k), `cos(${E.kx(k)})`]]);
+    return Kit.anti(f, F, { dom: [0.2, 2], hint: '$u=x$ y $dv=\\cos(' + (k === 1 ? '' : k) + 'x)\\,dx$.',
+      steps: partesSteps('x', '\\cos(' + (k === 1 ? '' : k) + 'x)', '1', '\\frac{\\operatorname{sen}(' + (k === 1 ? '' : k) + 'x)}{' + k + '}', F) }); },
+  () => { const a = pick([1, 2, 3, -1]), f = terms([[a, 'ln(x)']]), F = terms([[a, 'x*ln(x)'], [-a, 'x']]);
+    return Kit.anti(f, F, { dom: [0.3, 3], hint: 'Truco: escribe $\\ln x=\\ln x\\cdot1$ y toma $u=\\ln x$, $dv=dx$.',
+      steps: partesSteps('\\ln x', '', '\\frac{1}{x}', 'x', F) }); },
+  () => { const a = pick([1, 2, 3, -1]), n = ri(1, 3);
+    const f = terms([[a, `${xp(n)}*ln(x)`]]), F = terms([[fr(a, n + 1), `${xp(n + 1)}*ln(x)`], [fr(-a, (n + 1) * (n + 1)), xp(n + 1)]]);
+    return Kit.anti(f, F, { dom: [0.3, 3], hint: 'El logaritmo manda: $u=\\ln x$ y $dv=x^{' + n + '}dx$.',
+      steps: partesSteps('\\ln x', 'x^{' + n + '}', '\\frac{1}{x}', '\\frac{x^{' + (n + 1) + '}}{' + (n + 1) + '}', F) }); },
+  () => { const k = pick([1, 1, 2, -1]);
+    const f = `x^2*${ek(k)}`, F = `(${terms([[fr(1, k), 'x^2'], [fr(-2, k * k), 'x'], [fr(2, k * k * k), '']])})*${ek(k)}`;
+    return Kit.anti(f, F, { dom: [0.2, 1.8], hint: 'Hay que aplicar partes dos veces: la primera baja el grado de $x^2$ a $x$.',
+      steps: ['Primera vez: $u=x^2$, $dv=e^{' + (k === 1 ? '' : k) + 'x}dx$, y queda una integral de $x\\,e^{' + (k === 1 ? '' : k) + 'x}$.', 'Segunda vez: $u=x$, $dv=e^{' + (k === 1 ? '' : k) + 'x}dx$.', 'Juntando todo: ' + L(F) + ' $+C$'] }); },
+  () => { const a = pick([1, 2, -1]);
+    if (pick([0, 1])) { const f = terms([[a, 'e^x*sin(x)']]), F = terms([[fr(a, 2), 'e^x*(sin(x)-cos(x))']]);
+      return Kit.anti(f, F, { dom: [0.2, 2], hint: 'Aplica partes dos veces: reaparece la integral original y se despeja.',
+        steps: ['Dos veces por partes (con $u=e^x$) obtenemos $I=e^x(\\operatorname{sen}x-\\cos x)-I$.', 'Despejamos: $2I=e^x(\\operatorname{sen}x-\\cos x)$.', 'Resultado: ' + L(F) + ' $+C$'] }); }
+    const f = terms([[a, 'e^x*cos(x)']]), F = terms([[fr(a, 2), 'e^x*(sin(x)+cos(x))']]);
+    return Kit.anti(f, F, { dom: [0.2, 2], hint: 'Aplica partes dos veces: reaparece la integral original y se despeja.',
+      steps: ['Dos veces por partes (con $u=e^x$) obtenemos $I=e^x(\\operatorname{sen}x+\\cos x)-I$.', 'Despejamos: $2I=e^x(\\operatorname{sen}x+\\cos x)$.', 'Resultado: ' + L(F) + ' $+C$'] }); },
+  () => { const a = pick([1, 2, -1]), f = terms([[a, 'atan(x)']]), F = terms([[a, 'x*atan(x)'], [fr(-a, 2), 'ln(1+x^2)']]);
+    return Kit.anti(f, F, { dom: [0.2, 2.5], hint: '$u=\\operatorname{arctg}x$ y $dv=dx$; la integral que queda es de tipo $\\frac{u\'}{u}$.',
+      steps: partesSteps('\\operatorname{arctg}x', '', '\\frac{1}{1+x^2}', 'x', F) }); },
+];
+
+/* ---------- 7. Fracciones simples ---------- */
+const ab = () => { const a = ri(-3, 3); let b = ri(-3, 3); while (b === a) b = ri(-3, 3); return [a, b]; };
+const lnA = (a) => `ln(abs(${xm(a)}))`;
+const RA = [
+  () => { const c = pick([1, 2, 3, -1]), k = ri(2, 4), f = `${c}/(x^2+${k * k})`, F = terms([[fr(c, k), `atan(x/${k})`]]);
+    return Kit.anti(f, F, { dom: [0.2, 3], hint: 'Denominador sin raíces reales: $\\int\\frac{dx}{x^2+k^2}=\\frac{1}{k}\\operatorname{arctg}\\frac{x}{k}$.',
+      steps: ['$x^2+' + k * k + '=' + k * k + '\\left(1+\\left(\\frac{x}{' + k + '}\\right)^2\\right)$, así que es una arcotangente.', 'Resultado: ' + L(F) + ' $+C$'] }); },
+  () => { let a = nz(-3, 3), q = nz(-4, 4); while (a + q === 0) q = nz(-4, 4);
+    const f = `(${terms([[1, 'x'], [q, '']])})/(${xm(a)})`, F = terms([[1, 'x'], [a + q, lnA(a)]]);
+    return Kit.anti(f, F, { dom: [a + 0.3, a + 3], hint: 'Grado del numerador = grado del denominador: divide primero.',
+      steps: ['Dividimos: $\\frac{x' + (q > 0 ? '+' : '') + q + '}{' + T(xm(a)) + '}=1+\\frac{' + (a + q) + '}{' + T(xm(a)) + '}$.', 'Integramos cada parte: $x$ y $' + (a + q) + '\\ln|' + T(xm(a)) + '|$.', 'Resultado: ' + L(F) + ' $+C$'] }); },
+  () => { const [a, b] = ab(), c = pick([1, 2, 3, -1]), m = Math.max(a, b);
+    const f = `${c}/((${xm(a)})*(${xm(b)}))`, F = terms([[fr(c, a - b), lnA(a)], [fr(-c, a - b), lnA(b)]]);
+    return Kit.anti(f, F, { dom: [m + 0.3, m + 2.5], hint: 'Descompón en $\\frac{A}{' + T(xm(a)) + '}+\\frac{B}{' + T(xm(b)) + '}$.',
+      steps: ['Descomponemos: $\\frac{' + c + '}{(' + T(xm(a)) + ')(' + T(xm(b)) + ')}=\\frac{A}{' + T(xm(a)) + '}+\\frac{B}{' + T(xm(b)) + '}$.',
+        'Con $x=' + a + '$: $' + c + '=A\\cdot(' + (a - b) + ')$. Con $x=' + b + '$: $' + c + '=B\\cdot(' + (b - a) + ')$.', 'Integramos con logaritmos: ' + L(F) + ' $+C$'] }); },
+  () => { const [a, b] = ab(), A = nz(-3, 3), B = nz(-3, 3), p = A + B, q = -(A * b + B * a), m = Math.max(a, b);
+    const num = terms([[p, 'x'], [q, '']]), f = `(${num})/((${xm(a)})*(${xm(b)}))`, F = terms([[A, lnA(a)], [B, lnA(b)]]);
+    return Kit.anti(f, F, { dom: [m + 0.3, m + 2.5], hint: 'Descompón en fracciones simples y halla $A$ y $B$ dando a $x$ el valor de cada raíz.',
+      steps: ['Descomponemos: $\\frac{' + T(num) + '}{(' + T(xm(a)) + ')(' + T(xm(b)) + ')}=\\frac{A}{' + T(xm(a)) + '}+\\frac{B}{' + T(xm(b)) + '}$.',
+        'Con $x=' + a + '$: $' + (p * a + q) + '=A\\cdot(' + (a - b) + ')$, luego $A=' + A + '$.', 'Con $x=' + b + '$: $' + (p * b + q) + '=B\\cdot(' + (b - a) + ')$, luego $B=' + B + '$.',
+        'Resultado: ' + L(F) + ' $+C$'] }); },
+  () => { const a = nz(-3, 3), f = `x^2/(${xm(a)})`, F = terms([[fr(1, 2), 'x^2'], [a, 'x'], [a * a, lnA(a)]]);
+    return Kit.anti(f, F, { dom: [a + 0.3, a + 3], hint: 'El numerador tiene mayor grado: divide $x^2$ entre $' + T(xm(a)) + '$.',
+      steps: ['Dividiendo: $\\frac{x^2}{' + T(xm(a)) + '}=x+' + par(a) + '+\\frac{' + a * a + '}{' + T(xm(a)) + '}$.', 'Integramos cada término.', 'Resultado: ' + L(F) + ' $+C$'] }); },
+];
+
+root.Topics.push(
+  { id: 'sust', island: 'Técnicas', title: 'Cambio de variable', sub: 'Sustitución u = g(x)', gen: (d) => byLevel(SU, d)() },
+  { id: 'partes', island: 'Técnicas', title: 'Por partes', sub: '∫u dv = uv − ∫v du', gen: (d) => byLevel(PA, d)() },
+  { id: 'racio', island: 'Técnicas', title: 'Fracciones simples', sub: 'Funciones racionales', gen: (d) => byLevel(RA, d)() },
+);
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* Temas 8-10: integral definida, áreas, volúmenes de revolución */
+(function (root) {
+'use strict';
+const E = root.Engine, Kit = root.Kit;
+const { ri, pick, nz, fr, fadd, fmul, fstr, xp, ek, terms, ov, byLevel, L, LATEX: T } = E;
+const eP = (m) => m === 1 ? 'e' : `e^(${m})`;
+const par = (v) => v < 0 ? '(' + v + ')' : String(v);
+const intN = (f, a, b) => E.intTex(f, String(a), String(b));
+
+// polinomio [[coef, grado]...] -> {f, F, value (fracción) en [a,b]}
+function polyInt(list, a, b) {
+  const f = terms(list.map(([c, n]) => [c, xp(n)]));
+  const F = terms(list.map(([c, n]) => [fr(c, n + 1), xp(n + 1)]));
+  let v = [0, 1];
+  for (const [c, n] of list) v = fadd(v, fmul(fr(c, n + 1), fr(Math.pow(b, n + 1) - Math.pow(a, n + 1), 1)));
+  return { f, F, v };
+}
+const barrowSteps = (F, a, b, val) => ['Una primitiva es $F(x)=' + T(F) + '$.',
+  'Regla de Barrow: $F(' + T(String(b)) + ')-F(' + T(String(a)) + ')$.', 'Resultado: ' + L(val)];
+
+/* ---------- 8. Integral definida ---------- */
+const BA = [
+  () => { // polinomio
+    const a = ri(0, 2), b = a + ri(1, 3), n1 = ri(2, 3), n2 = ri(1, n1 - 1), p = polyInt([[nz(-4, 5), n1], [nz(-4, 5), n2], [ri(-3, 4), 0]], a, b);
+    return Kit.num(fstr(p.v), intN(p.f, a, b), { prompt: 'Calcula la integral definida. Puedes dar una fracción o un decimal.', F: p.F, quad: { f: p.f, a: String(a), b: String(b) },
+      hint: 'Calcula la primitiva y evalúa en los dos límites: $F(b)-F(a)$.', steps: barrowSteps(p.F, a, b, fstr(p.v)) });
+  },
+  () => { // 1/x
+    const c = pick([1, 2, 3, -1]), b = pick([2, 3, 4, 'e']), f = terms([ov(c, 'x')]), val = b === 'e' ? String(c) : terms([[c, `ln(${b})`]]);
+    return Kit.num(val, intN(f, 1, b), { F: terms([[c, 'ln(x)']]), quad: { f, a: '1', b: String(b) }, hint: 'Primitiva: $' + c + '\\ln x$. Recuerda $\\ln1=0$' + (b === 'e' ? ' y $\\ln e=1$.' : '.'),
+      steps: barrowSteps(terms([[c, 'ln(x)']]), 1, b, val) });
+  },
+  () => { // exponencial
+    const c = pick([1, 2, 3, -1]), k = pick([1, 2, -1]), b = pick([1, 2]), f = terms([[c, ek(k)]]), F = terms([[fr(c, k), ek(k)]]);
+    const val = terms([[fr(c, k), eP(k * b)], [fr(-c, k), '']]);
+    return Kit.num(val, intN(f, 0, b), { F, quad: { f, a: '0', b: String(b) }, hint: 'Primitiva: ' + L(F) + '. Recuerda $e^0=1$.', steps: barrowSteps(F, 0, b, val) });
+  },
+  () => { // raíz
+    const c = pick([1, 2, 3, -1]), m1 = ri(0, 1), m2 = ri(2, 3), f = terms([[c, 'sqrt(x)']]), F = terms([[fr(2 * c, 3), 'x^(3/2)']]);
+    const val = fstr(fmul(fr(2 * c, 3), fr(m2 * m2 * m2 - m1 * m1 * m1, 1)));
+    return Kit.num(val, intN(f, m1 * m1, m2 * m2), { prompt: 'Calcula la integral definida. Puedes dar una fracción o un decimal.', F, quad: { f, a: String(m1 * m1), b: String(m2 * m2), n: 100000 },
+      hint: 'Escribe $\\sqrt{x}=x^{1/2}$. Los límites son cuadrados perfectos.', steps: barrowSteps(F, m1 * m1, m2 * m2, val) });
+  },
+  () => { // trigonométricas
+    const a = nz(-4, 4), b = nz(-4, 4), t = ri(0, 2); let f, F, lo, hi, val;
+    if (t === 0) { f = terms([[a, 'sin(x)'], [b, 'cos(x)']]); F = terms([[-a, 'cos(x)'], [b, 'sin(x)']]); lo = '0'; hi = 'pi/2'; val = String(a + b); }
+    else if (t === 1) { f = terms([[a, 'sin(x)']]); F = terms([[-a, 'cos(x)']]); lo = '0'; hi = 'pi'; val = String(2 * a); }
+    else { f = terms([[a, 'sin(x)'], [b, 'cos(x)']]); F = terms([[-a, 'cos(x)'], [b, 'sin(x)']]); lo = 'pi/2'; hi = 'pi'; val = String(a - b); }
+    return Kit.num(val, E.intTex(f, lo, hi), { F, quad: { f, a: lo, b: hi }, hint: 'Valores útiles: $\\operatorname{sen}0=0$, $\\operatorname{sen}\\frac{\\pi}{2}=1$, $\\cos\\pi=-1$.',
+      steps: ['Una primitiva es $F(x)=' + T(F) + '$.', 'Evaluamos $F(' + T(hi) + ')-F(' + T(lo) + ')$ con los valores de seno y coseno.', 'Resultado: ' + L(val)] });
+  },
+  () => { // arcotangente
+    const c = pick([1, 2, 4, -1]), k = ri(1, 3), f = `${c}/(x^2+${k * k})`, F = terms([[fr(c, k), `atan(x/${k})`]]), val = terms([[fr(c, 4 * k), 'pi']]);
+    return Kit.num(val, intN(f, 0, k), { F, quad: { f, a: '0', b: String(k) }, hint: 'Primitiva con arcotangente. Recuerda $\\operatorname{arctg}1=\\frac{\\pi}{4}$.',
+      steps: ['Una primitiva es $F(x)=' + T(F) + '$.', 'En $x=' + k + '$ el argumento vale $1$ y $\\operatorname{arctg}1=\\frac{\\pi}{4}$; en $x=0$ vale $0$.', 'Resultado: ' + L(val)] });
+  },
+  () => { // sustitución
+    const t = ri(0, 2); let f, F, val, lo = '0', hi = '1', hint;
+    if (t === 0) { const a = pick([2, 4, 1, 3]); f = terms([[a, 'x*e^(x^2)']]); F = terms([[fr(a, 2), 'e^(x^2)']]); val = terms([[fr(a, 2), 'e'], [fr(-a, 2), '']]); hint = '$u=x^2$, $du=2x\\,dx$.'; }
+    else if (t === 1) { const a = pick([2, 4, 1, 3]), n = ri(2, 3); f = terms([[a, `x*(x^2+1)^${n}`]]); F = terms([[fr(a, 2 * (n + 1)), `(x^2+1)^${n + 1}`]]);
+      val = fstr(fmul(fr(a, 2 * (n + 1)), fr(Math.pow(2, n + 1) - 1, 1))); hint = '$u=x^2+1$, $du=2x\\,dx$; cuidado con los nuevos límites.'; }
+    else { const n = ri(2, 3); f = `cos(x)*sin(x)^${n}`; F = `sin(x)^${n + 1}/${n + 1}`; val = `1/${n + 1}`; hi = 'pi/2'; hint = '$u=\\operatorname{sen}x$, $du=\\cos x\\,dx$.'; }
+    return Kit.num(val, E.intTex(f, lo, hi), { F, quad: { f, a: lo, b: hi }, hint, steps: ['Hallamos una primitiva con cambio de variable: $F(x)=' + T(F) + '$.', 'Regla de Barrow: $F(' + T(hi) + ')-F(0)$.', 'Resultado: ' + L(val)] });
+  },
+  () => { // por partes
+    const a = pick([1, 2, 3, -1]), t = ri(0, 4); let f, F, val, lo, hi;
+    if (t === 0) { f = terms([[a, 'x*e^x']]); F = terms([[a, '(x-1)*e^x']]); val = String(a); lo = '0'; hi = '1'; }
+    else if (t === 1) { f = terms([[a, 'ln(x)']]); F = terms([[a, 'x*ln(x)'], [-a, 'x']]); val = String(a); lo = '1'; hi = 'e'; }
+    else if (t === 2) { f = terms([[a, 'x*cos(x)']]); F = terms([[a, 'x*sin(x)'], [a, 'cos(x)']]); val = terms([[fr(a, 2), 'pi'], [-a, '']]); lo = '0'; hi = 'pi/2'; }
+    else if (t === 3) { f = terms([[a, 'x*sin(x)']]); F = terms([[-a, 'x*cos(x)'], [a, 'sin(x)']]); val = terms([[a, 'pi']]); lo = '0'; hi = 'pi'; }
+    else { f = terms([[a, 'x*ln(x)']]); F = terms([[fr(a, 2), 'x^2*ln(x)'], [fr(-a, 4), 'x^2']]); val = terms([[fr(a, 4), 'e^2'], [fr(a, 4), '']]); lo = '1'; hi = 'e'; }
+    return Kit.num(val, E.intTex(f, lo, hi), { F, quad: { f, a: lo, b: hi }, hint: 'Primero una primitiva por partes; después Barrow.',
+      steps: ['Por partes obtenemos una primitiva: $F(x)=' + T(F) + '$.', 'Barrow: $F(' + T(hi) + ')-F(' + T(lo) + ')$.', 'Resultado: ' + L(val)] });
+  },
+];
+
+/* ---------- 9. Áreas ---------- */
+const AR = [
+  () => { // bajo una curva
+    const a = ri(0, 2), b = a + ri(1, 3), p = polyInt([[ri(1, 4), 2], [ri(0, 4), 1], [ri(0, 5), 0]], a, b);
+    return Kit.num(fstr(p.v), 'y=' + T(p.f) + ',\\quad ' + T(String(a)) + '\\le x\\le ' + T(String(b)),
+      { prompt: 'Calcula el área bajo la curva, por encima del eje OX, en el intervalo indicado.', F: p.F, quad: { f: p.f, a: String(a), b: String(b) },
+        hint: 'La función es positiva en el intervalo: el área es $\\int_a^b f(x)\\,dx$.',
+        steps: ['La función es positiva, así que el área es $\\int_{' + a + '}^{' + b + '}f(x)\\,dx$.', 'Primitiva: $F(x)=' + T(p.F) + '$.', 'Barrow: $F(' + b + ')-F(' + a + ')=' + T(fstr(p.v)) + '$.'] });
+  },
+  () => { // parábola y eje OX
+    const k = ri(1, 4), a = pick([1, 2]), f = terms([[a * k * k, ''], [-a, 'x^2']]), val = fstr(fr(4 * a * k * k * k, 3));
+    return Kit.num(val, 'y=' + T(f), { prompt: 'Calcula el área encerrada entre la parábola y el eje OX.', quad: { f: `abs(${f})`, a: String(-k), b: String(k) },
+      hint: 'Corta al eje en las raíces de $y$. Por simetría, el área es el doble de la mitad derecha.',
+      steps: ['Cortes con OX: $' + T(f) + '=0\\Rightarrow x=\\pm' + k + '$.', 'Entre ellos la parábola es positiva: área $=\\int_{-' + k + '}^{' + k + '}f\\,dx=2\\int_0^{' + k + '}f\\,dx$.', 'Resultado: ' + L(val)] });
+  },
+  () => { // parábola y recta
+    let x1 = ri(-3, 2), x2 = ri(x1 + 1, Math.min(3, x1 + 4)); const a = pick([1, 1, 2]);
+    const f = terms([[a, 'x^2']]), g = terms([[a * (x1 + x2), 'x'], [-a * x1 * x2, '']]), h = terms([[-a, 'x^2'], [a * (x1 + x2), 'x'], [-a * x1 * x2, '']]);
+    const val = fstr(fr(a * Math.pow(x2 - x1, 3), 6));
+    return Kit.num(val, 'y=' + T(f) + '\\quad\\text{y}\\quad y=' + T(g), { prompt: 'Calcula el área de la región encerrada entre las dos curvas.',
+      quad: { f: `abs((${g})-(${f}))`, a: String(x1), b: String(x2) }, hint: 'Iguala las dos funciones para hallar los límites y resta: (la de arriba) − (la de abajo).',
+      steps: ['Cortes: $' + T(f) + '=' + T(g) + '\\Rightarrow x=' + x1 + '$ y $x=' + x2 + '$.', 'Entre ambos puntos la recta queda por encima de la parábola.',
+        'Área $=\\int_{' + x1 + '}^{' + x2 + '}(' + T(h) + ')\\,dx=' + T(val) + '$.'] });
+  },
+  () => { // bajo 1/x, e^x, sen x
+    const t = ri(0, 2);
+    if (t === 0) { const b = pick([2, 3, 4, 'e']), val = b === 'e' ? '1' : `ln(${b})`;
+      return Kit.num(val, 'y=\\frac{1}{x},\\quad 1\\le x\\le ' + T(String(b)), { prompt: 'Calcula el área bajo la curva en el intervalo indicado.', F: 'ln(x)', quad: { f: '1/x', a: '1', b: String(b) },
+        hint: 'Una primitiva de $\\frac{1}{x}$ es $\\ln x$.', steps: ['Área $=\\int_1^{' + b + '}\\frac{1}{x}dx=\\left[\\ln x\\right]_1^{' + b + '}$.', 'Resultado: ' + L(val)] }); }
+    if (t === 1) { const k = pick([1, 2]), b = pick([1, 2]), f = ek(k), val = terms([[fr(1, k), eP(k * b)], [fr(-1, k), '']]);
+      return Kit.num(val, 'y=' + T(f) + ',\\quad 0\\le x\\le ' + b, { prompt: 'Calcula el área bajo la curva en el intervalo indicado.', F: terms([[fr(1, k), ek(k)]]), quad: { f, a: '0', b: String(b) },
+        hint: 'Primitiva: ' + L(terms([[fr(1, k), ek(k)]])) + '.', steps: ['Área $=\\int_0^{' + b + '}' + T(f) + '\\,dx$.', 'Barrow con la primitiva ' + L(terms([[fr(1, k), ek(k)]])) + '.', 'Resultado: ' + L(val)] }); }
+    const a = pick([1, 2, 3]), f = terms([[a, 'sin(x)']]), val = String(2 * a);
+    return Kit.num(val, 'y=' + T(f) + ',\\quad 0\\le x\\le\\pi', { prompt: 'Calcula el área bajo la curva en el intervalo indicado.', F: terms([[-a, 'cos(x)']]), quad: { f, a: '0', b: 'pi' },
+      hint: 'La función es positiva en $[0,\\pi]$.', steps: ['Área $=\\int_0^{\\pi}' + T(f) + '\\,dx=\\left[' + T(terms([[-a, 'cos(x)']])) + '\\right]_0^{\\pi}$.', 'Resultado: ' + L(val)] });
+  },
+  () => { // cúbica y eje OX
+    const m = ri(1, 3), f = `x^3-${m * m}*x`.replace('-1*x', '-x'), val = fstr(fr(m * m * m * m, 2));
+    return Kit.num(val, 'y=' + T(f), { prompt: 'Calcula el área encerrada entre la curva y el eje OX.', quad: { f: `abs(${f})`, a: String(-m), b: String(m) },
+      hint: 'Raíces: $x=0$ y $x=\\pm' + m + '$. La función cambia de signo: calcula cada trozo en valor absoluto.',
+      steps: ['Cortes con OX: $x(x^2-' + m * m + ')=0\\Rightarrow x=0,\\ \\pm' + m + '$.', 'La función es impar: los dos recintos tienen el mismo área, así que $A=2\\left|\\int_0^{' + m + '}f\\,dx\\right|$.', 'Resultado: ' + L(val)] });
+  },
+  () => { // raíz y recta
+    const m = ri(1, 3), f = 'sqrt(x)', g = m === 1 ? 'x' : `x/${m}`, val = fstr(fr(m * m * m, 6));
+    return Kit.num(val, 'y=\\sqrt{x}\\quad\\text{y}\\quad y=' + T(g), { prompt: 'Calcula el área de la región encerrada entre las dos curvas.', quad: { f: `abs(sqrt(x)-${g})`, a: '0', b: String(m * m), n: 100000 },
+      hint: 'Iguala $\\sqrt{x}=' + T(g) + '$ (eleva al cuadrado) y resta la de abajo a la de arriba.',
+      steps: ['Cortes: $\\sqrt{x}=' + T(g) + '\\Rightarrow x=0$ y $x=' + m * m + '$.', 'Entre ellos $\\sqrt{x}$ queda por encima de la recta.', 'Área $=\\int_0^{' + m * m + '}\\left(\\sqrt{x}-' + T(g) + '\\right)dx=' + T(val) + '$.'] });
+  },
+];
+
+/* ---------- 10. Volúmenes de revolución ---------- */
+const rng = (a, b) => T(String(a)) + '\\le x\\le ' + T(String(b));
+const volSteps = (f, a, b, val) => ['Volumen alrededor de OX: $V=\\pi\\int_{' + T(String(a)) + '}^{' + T(String(b)) + '}[f(x)]^2dx$.', 'Aquí $[f(x)]^2=' + T(f) + '$.', 'Integramos y aplicamos Barrow: ' + L(val)];
+const VO = [
+  () => { const n = ri(1, 2), b = ri(1, 3), val = terms([[fr(Math.pow(b, 2 * n + 1), 2 * n + 1), 'pi']]);
+    return Kit.num(val, 'y=' + T(xp(n)) + ',\\quad ' + rng(0, b), { prompt: 'Calcula el volumen del sólido que se obtiene al girar la región alrededor del eje OX.', quad: { f: `pi*(${xp(n)})^2`, a: '0', b: String(b) },
+      hint: '$V=\\pi\\int_a^b[f(x)]^2dx$. Eleva $f$ al cuadrado antes de integrar.', steps: volSteps(xp(2 * n), 0, b, val) }); },
+  () => { const k = ri(1, 3), h = ri(1, 3), val = terms([[fr(k * k * h * h * h, 3), 'pi']]);
+    return Kit.num(val, 'y=' + T(k === 1 ? 'x' : k + '*x') + ',\\quad ' + rng(0, h), { prompt: 'Calcula el volumen del cono que se obtiene al girar la región alrededor del eje OX.', quad: { f: `pi*(${k}*x)^2`, a: '0', b: String(h) },
+      hint: '$[f(x)]^2=' + k * k + 'x^2$.', steps: volSteps(terms([[k * k, 'x^2']]), 0, h, val) }); },
+  () => { const k = ri(1, 3), b = ri(1, 3), val = terms([[fr(k * k * b * b, 2), 'pi']]);
+    return Kit.num(val, 'y=' + T(k === 1 ? 'sqrt(x)' : k + '*sqrt(x)') + ',\\quad ' + rng(0, b), { prompt: 'Calcula el volumen del sólido que se obtiene al girar la región alrededor del eje OX.', quad: { f: `pi*(${k}*sqrt(x))^2`, a: '0', b: String(b), n: 100000 },
+      hint: 'Al elevar al cuadrado desaparece la raíz: $[f(x)]^2=' + k * k + 'x$.', steps: volSteps(terms([[k * k, 'x']]), 0, b, val) }); },
+  () => { const b = ri(1, 3), val = `pi*((${b}+1)^3-1)/3`;
+    return Kit.num(val, 'y=x+1,\\quad ' + rng(0, b), { prompt: 'Calcula el volumen del sólido que se obtiene al girar la región alrededor del eje OX.', quad: { f: 'pi*(x+1)^2', a: '0', b: String(b) },
+      hint: '$[f(x)]^2=(x+1)^2$, y una primitiva es $\\frac{(x+1)^3}{3}$.', steps: volSteps('(x+1)^2', 0, b, val) }); },
+  () => { const b = ri(2, 5), val = `pi*(${b}-1)/${b}`;
+    return Kit.num(val, 'y=\\frac{1}{x},\\quad ' + rng(1, b), { prompt: 'Calcula el volumen del sólido que se obtiene al girar la región alrededor del eje OX.', quad: { f: 'pi/x^2', a: '1', b: String(b) },
+      hint: '$[f(x)]^2=\\frac{1}{x^2}=x^{-2}$.', steps: volSteps('1/x^2', 1, b, val) }); },
+  () => { const b = ri(1, 2), val = `pi*(e^${2 * b}-1)/2`;
+    return Kit.num(val, 'y=e^{x},\\quad ' + rng(0, b), { prompt: 'Calcula el volumen del sólido que se obtiene al girar la región alrededor del eje OX.', quad: { f: 'pi*e^(2*x)', a: '0', b: String(b) },
+      hint: '$[f(x)]^2=e^{2x}$.', steps: volSteps('e^(2*x)', 0, b, val) }); },
+  () => Kit.num('pi^2/2', 'y=\\operatorname{sen}x,\\quad ' + rng(0, 'pi'), { prompt: 'Calcula el volumen del sólido que se obtiene al girar la región alrededor del eje OX.', quad: { f: 'pi*sin(x)^2', a: '0', b: 'pi' },
+    hint: 'Usa $\\operatorname{sen}^2x=\\frac{1-\\cos2x}{2}$.', steps: volSteps('sin(x)^2', 0, 'pi', 'pi^2/2') }),
+  () => { const r = ri(1, 3), val = terms([[fr(4 * r * r * r, 3), 'pi']]);
+    return Kit.num(val, 'y=\\sqrt{' + (r * r) + '-x^2},\\quad ' + rng(-r, r), { prompt: 'Calcula el volumen de la esfera que se obtiene al girar la semicircunferencia alrededor del eje OX.', quad: { f: `pi*(${r * r}-x^2)`, a: String(-r), b: String(r) },
+      hint: '$[f(x)]^2=' + r * r + '-x^2$: ¡un polinomio!', steps: volSteps(terms([[-1, 'x^2'], [r * r, '']]), -r, r, val) }); },
+];
+
+root.Topics.push(
+  { id: 'barrow', island: 'Integral definida', title: 'Regla de Barrow', sub: 'Integrales con límites', gen: (d) => byLevel(BA, d)() },
+  { id: 'areas', island: 'Integral definida', title: 'Áreas', sub: 'Bajo curvas y entre curvas', gen: (d) => byLevel(AR, d)() },
+  { id: 'vol', island: 'Integral definida', title: 'Volúmenes de revolución', sub: 'Giros alrededor del eje OX', gen: (d) => byLevel(VO, d)() },
+);
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* Teoría de cada tema, en páginas cortas. $...$ = fórmula en línea; fx = fórmulas destacadas. */
+(function (root) {
+'use strict';
+const R = String.raw;
+root.Theory = {
+
+deriv: [
+  { h: 'Integrar es deshacer una derivada', body: R`Si derivas $x^{3}$ obtienes $3x^{2}$. Integrar es el camino de vuelta: dada $3x^{2}$, buscar la función que al derivarla da $3x^{2}$.
+Por eso conviene tener frescas las derivadas antes de empezar.` },
+  { h: 'Derivadas básicas', fx: [
+    R`(x^{n})'=n\,x^{n-1}`, R`(e^{x})'=e^{x}`, R`(\ln x)'=\frac{1}{x}`, R`(\operatorname{sen}x)'=\cos x`,
+    R`(\cos x)'=-\operatorname{sen}x`, R`(\operatorname{tg}x)'=\frac{1}{\cos^{2}x}`, R`(\operatorname{arctg}x)'=\frac{1}{1+x^{2}}`] },
+  { h: 'Regla de la cadena', body: R`Si hay una función dentro de otra, se deriva la de fuera y se multiplica por la derivada de la de dentro.`,
+    fx: [R`\left[f(g(x))\right]'=f'(g(x))\cdot g'(x)`],
+    ex: { q: R`f(x)=e^{x^{2}}`, steps: [R`Fuera: $e^{u}$, que se deriva en $e^{u}$. Dentro: $u=x^{2}$, que se deriva en $2x$.`, R`Resultado: $f'(x)=2x\,e^{x^{2}}$.`] } },
+  { h: 'Producto y cociente', fx: [R`(uv)'=u'v+uv'`, R`\left(\frac{u}{v}\right)'=\frac{u'v-uv'}{v^{2}}`],
+    ex: { q: R`f(x)=x\,e^{x}`, steps: [R`Con $u=x$ y $v=e^{x}$: $f'=1\cdot e^{x}+x\,e^{x}$.`, R`Resultado: $f'(x)=(x+1)\,e^{x}$.`] } },
+],
+
+pot: [
+  { h: 'Primitiva e integral indefinida', body: R`Una función $F$ es una primitiva de $f$ si $F'=f$. Como la derivada de una constante es $0$, hay infinitas primitivas, todas iguales salvo una constante $C$.
+En los ejercicios no hace falta que escribas $+C$.`, fx: [R`\int f(x)\,dx=F(x)+C`] },
+  { h: 'La regla de las potencias', body: R`Se suma 1 al exponente y se divide entre el exponente nuevo. Las constantes salen fuera de la integral y las sumas se integran término a término.`,
+    fx: [R`\int x^{n}\,dx=\frac{x^{n+1}}{n+1}+C\qquad(n\neq-1)`],
+    ex: { q: R`\int\left(6x^{2}+4x-5\right)dx`, steps: [R`Término a término: $\int6x^{2}dx=2x^{3}$, $\int4x\,dx=2x^{2}$ y $\int5\,dx=5x$.`, R`Resultado: $2x^{3}+2x^{2}-5x+C$.`] } },
+  { h: 'Raíces y fracciones', body: R`Antes de integrar, reescribe todo como potencias de $x$: $\sqrt{x}=x^{1/2}$ y $\frac{1}{x^{n}}=x^{-n}$.`,
+    ex: { q: R`\int\left(\sqrt{x}+\frac{3}{x^{2}}\right)dx`, steps: [R`Reescribimos: $x^{1/2}+3x^{-2}$.`,
+      R`$\int x^{1/2}dx=\frac{2}{3}x^{3/2}$ y $\int3x^{-2}dx=3\cdot\frac{x^{-1}}{-1}=-\frac{3}{x}$.`, R`Resultado: $\frac{2}{3}x^{3/2}-\frac{3}{x}+C$.`] } },
+  { h: 'Un caso aparte', body: R`La regla falla con $n=-1$, es decir, con $\frac{1}{x}$ (saldría una división entre 0). Su primitiva es un logaritmo, y la verás en el siguiente tema.` },
+],
+
+elem: [
+  { h: 'Tabla de integrales inmediatas', fx: [
+    R`\int e^{x}\,dx=e^{x}+C`, R`\int a^{x}\,dx=\frac{a^{x}}{\ln a}+C`, R`\int\frac{1}{x}\,dx=\ln|x|+C`,
+    R`\int\operatorname{sen}x\,dx=-\cos x+C`, R`\int\cos x\,dx=\operatorname{sen}x+C`, R`\int\frac{1}{\cos^{2}x}\,dx=\operatorname{tg}x+C`,
+    R`\int\frac{1}{1+x^{2}}\,dx=\operatorname{arctg}x+C`, R`\int\frac{1}{\sqrt{1-x^{2}}}\,dx=\operatorname{arcsen}x+C`] },
+  { h: 'Comprueba derivando', body: R`Es la mejor costumbre: derivar tu resultado tiene que devolver lo que había dentro de la integral. Fíjate sobre todo en el signo de $\int\operatorname{sen}x\,dx$.`,
+    ex: { q: R`\int\left(3\operatorname{sen}x-\frac{2}{x}\right)dx`, steps: [R`$3\int\operatorname{sen}x\,dx=-3\cos x$ y $2\int\frac{1}{x}dx=2\ln|x|$.`, R`Resultado: $-3\cos x-2\ln|x|+C$.`] } },
+],
+
+lin: [
+  { h: 'Cuando dentro hay ax+b', body: R`Si conoces $\int f(u)\,du=F(u)$, entonces integrar $f(ax+b)$ es igual, pero dividiendo entre la derivada de lo de dentro, que es $a$.`,
+    fx: [R`\int f(ax+b)\,dx=\frac{1}{a}\,F(ax+b)+C`] },
+  { h: 'Ejemplos', fx: [R`\int e^{3x+1}dx=\frac{1}{3}e^{3x+1}+C`, R`\int\cos(2x)\,dx=\frac{1}{2}\operatorname{sen}(2x)+C`,
+    R`\int(2x+1)^{4}dx=\frac{(2x+1)^{5}}{2\cdot5}+C`, R`\int\frac{1}{5x-2}dx=\frac{1}{5}\ln|5x-2|+C`] },
+  { h: 'Un ejemplo completo', ex: { q: R`\int\operatorname{sen}(4x-1)\,dx`, steps: [R`Fuera: $\int\operatorname{sen}u\,du=-\cos u$. Dentro: $u=4x-1$, con derivada $4$.`, R`Resultado: $-\frac{1}{4}\cos(4x-1)+C$.`] },
+    body: R`El error típico es olvidar el factor $\frac{1}{a}$. La app te avisa cuando tu resultado sale multiplicado por una constante.` },
+],
+
+sust: [
+  { h: 'La idea', body: R`Cuando una parte de la integral es (casi) la derivada de otra parte, se cambia de variable: $u=g(x)$ y $du=g'(x)\,dx$.`,
+    fx: [R`\int f(g(x))\,g'(x)\,dx=\int f(u)\,du`] },
+  { h: 'Los pasos', body: R`1. Elige $u$: lo que hay dentro de una potencia, de un exponente o en un denominador.
+2. Calcula $du$.
+3. Reescribe toda la integral en $u$.
+4. Integra.
+5. Deshaz el cambio.` },
+  { h: 'Un ejemplo', ex: { q: R`\int2x\left(x^{2}+1\right)^{3}dx`, steps: [R`Tomamos $u=x^{2}+1$, luego $du=2x\,dx$.`, R`La integral queda $\int u^{3}du=\frac{u^{4}}{4}$.`, R`Deshacemos el cambio: $\frac{\left(x^{2}+1\right)^{4}}{4}+C$.`] } },
+  { h: 'Cuando falta una constante', body: R`Si te sobra o falta un número, no pasa nada: se arregla con una fracción.`,
+    ex: { q: R`\int x\,e^{x^{2}}dx`, steps: [R`$u=x^{2}$ y $du=2x\,dx$, así que $x\,dx=\frac{du}{2}$.`, R`Queda $\frac{1}{2}\int e^{u}du=\frac{1}{2}e^{u}$.`, R`Resultado: $\frac{1}{2}e^{x^{2}}+C$.`] } },
+  { h: 'Patrones frecuentes', body: R`Si reconoces uno, la integral se resuelve de memoria.`, fx: [
+    R`\int f'(x)\,f(x)^{n}dx=\frac{f(x)^{n+1}}{n+1}+C`, R`\int\frac{f'(x)}{f(x)}\,dx=\ln|f(x)|+C`, R`\int f'(x)\,e^{f(x)}dx=e^{f(x)}+C`] },
+],
+
+partes: [
+  { h: 'La fórmula', body: R`Sale de la derivada de un producto. Sirve para integrales que son producto de dos funciones de tipo distinto, cuando una se simplifica al derivarla.`,
+    fx: [R`\int u\,dv=u\,v-\int v\,du`] },
+  { h: 'Regla ALPES', body: R`Toma como $u$ la primera que aparezca en este orden y deja el resto como $dv$:
+**A**rcos, **L**ogaritmos, **P**olinomios, **E**xponenciales, **S**eno y coseno.` },
+  { h: 'Un ejemplo', ex: { q: R`\int x\,e^{x}dx`, steps: [R`$u=x\Rightarrow du=dx$ y $dv=e^{x}dx\Rightarrow v=e^{x}$.`, R`$\int x\,e^{x}dx=x\,e^{x}-\int e^{x}dx=x\,e^{x}-e^{x}$.`, R`Resultado: $(x-1)\,e^{x}+C$.`] } },
+  { h: 'Con un logaritmo', ex: { q: R`\int x\ln x\,dx`, steps: [R`$u=\ln x\Rightarrow du=\frac{1}{x}dx$ y $dv=x\,dx\Rightarrow v=\frac{x^{2}}{2}$.`,
+    R`$\int x\ln x\,dx=\frac{x^{2}}{2}\ln x-\int\frac{x}{2}\,dx=\frac{x^{2}}{2}\ln x-\frac{x^{2}}{4}$.`, R`Resultado: $\frac{x^{2}}{2}\ln x-\frac{x^{2}}{4}+C$.`] } },
+  { h: 'Tres trucos', body: R`Para $\int\ln x\,dx$ escribe $\ln x\cdot1$ y toma $u=\ln x$.
+Si hay $x^{2}$ multiplicando, aplica partes dos veces.
+Con $e^{x}\operatorname{sen}x$ la integral original reaparece: se despeja como una ecuación.` },
+],
+
+racio: [
+  { h: 'Funciones racionales', body: R`Son cocientes de polinomios. Si el grado del numerador es **mayor o igual** que el del denominador, se divide primero. Después se integra según cómo sea el denominador.` },
+  { h: 'Raíces distintas', body: R`Se descompone en fracciones simples. Para hallar $A$ y $B$, da a $x$ el valor de cada raíz. Cada fracción se integra a un logaritmo.`,
+    fx: [R`\frac{px+q}{(x-a)(x-b)}=\frac{A}{x-a}+\frac{B}{x-b}`],
+    ex: { q: R`\int\frac{x+5}{(x-1)(x+2)}\,dx`, steps: [R`Descomponemos: $x+5=A(x+2)+B(x-1)$.`, R`Con $x=1$: $6=3A\Rightarrow A=2$. Con $x=-2$: $3=-3B\Rightarrow B=-1$.`, R`Resultado: $2\ln|x-1|-\ln|x+2|+C$.`] } },
+  { h: 'Denominador sin raíces reales', body: R`Un denominador como $x^{2}+4$ no se factoriza: la primitiva es una arcotangente.`,
+    fx: [R`\int\frac{dx}{x^{2}+k^{2}}=\frac{1}{k}\operatorname{arctg}\frac{x}{k}+C`] },
+  { h: 'Dividir primero', ex: { q: R`\int\frac{x+3}{x-1}\,dx`, steps: [R`Dividimos: $\frac{x+3}{x-1}=1+\frac{4}{x-1}$.`, R`Integramos cada parte: $x$ y $4\ln|x-1|$.`, R`Resultado: $x+4\ln|x-1|+C$.`] } },
+],
+
+barrow: [
+  { h: 'La integral definida', body: R`Con límites, la integral es un número: el área con signo bajo la curva entre $a$ y $b$. Se calcula con la regla de Barrow, donde $F$ es cualquier primitiva de $f$ (la constante se cancela).`,
+    fx: [R`\int_{a}^{b}f(x)\,dx=F(b)-F(a)`] },
+  { h: 'Cómo se calcula', ex: { q: R`\int_{0}^{2}\left(3x^{2}+1\right)dx`, steps: [R`Una primitiva es $F(x)=x^{3}+x$.`, R`$F(2)-F(0)=(8+2)-0$.`, R`Resultado: $10$.`] } },
+  { h: 'Propiedades', body: R`Si cambias los límites, cambia el signo. Y puedes partir el intervalo por donde quieras.`,
+    fx: [R`\int_{a}^{b}f\,dx=-\int_{b}^{a}f\,dx`, R`\int_{a}^{b}f\,dx=\int_{a}^{c}f\,dx+\int_{c}^{b}f\,dx`] },
+  { h: 'Cómo dar el resultado', body: R`Escribe el valor exacto: «ln(2)», «pi/3», «e^2-1», «7/3»… También vale un decimal (por ejemplo «2.33») si está bien redondeado.` },
+],
+
+areas: [
+  { h: 'Área bajo una curva', body: R`Si la función es positiva en el intervalo, el área es la integral.`, fx: [R`A=\int_{a}^{b}f(x)\,dx\qquad(f\ge0)`] },
+  { h: 'Si la función cambia de signo', body: R`La integral resta lo que queda bajo el eje. Para el área: halla los cortes con el eje OX, integra cada trozo y suma los **valores absolutos**.` },
+  { h: 'Entre dos curvas', body: R`Los límites son los puntos de corte, que salen de resolver $f(x)=g(x)$. A la curva de arriba se le resta la de abajo.`,
+    fx: [R`A=\int_{a}^{b}\left(f(x)-g(x)\right)dx\qquad(f\ge g)`] },
+  { h: 'Un ejemplo', ex: { q: R`y=x^{2}\quad\text{y}\quad y=x+2`, steps: [
+    R`Cortes: $x^{2}=x+2\Rightarrow x^{2}-x-2=0\Rightarrow x=-1$ y $x=2$.`,
+    R`Arriba está la recta: $A=\int_{-1}^{2}\left(x+2-x^{2}\right)dx=\left[\frac{x^{2}}{2}+2x-\frac{x^{3}}{3}\right]_{-1}^{2}$.`,
+    R`$\left(2+4-\frac{8}{3}\right)-\left(\frac{1}{2}-2+\frac{1}{3}\right)=\frac{10}{3}+\frac{7}{6}=\frac{9}{2}$.`] } },
+],
+
+vol: [
+  { h: 'Girar una curva alrededor de OX', body: R`Cada trozo de la región, al girar, genera un disco de radio $f(x)$. Se integra el **cuadrado** de la función y se multiplica por $\pi$.`,
+    fx: [R`V=\pi\int_{a}^{b}\left[f(x)\right]^{2}dx`] },
+  { h: 'Un ejemplo', ex: { q: R`y=\sqrt{x},\quad 0\le x\le4`, steps: [R`Elevamos al cuadrado: $\left[f(x)\right]^{2}=x$.`, R`$V=\pi\int_{0}^{4}x\,dx=\pi\left[\frac{x^{2}}{2}\right]_{0}^{4}$.`, R`Resultado: $8\pi$.`] } },
+  { h: 'Cuerpos conocidos', body: R`Con una recta que pasa por el origen sale un cono; con una semicircunferencia, una esfera. De ahí salen las fórmulas de siempre: la esfera de radio $r$ tiene volumen $\frac{4}{3}\pi r^{3}$.
+Escribe el resultado con pi, por ejemplo «8*pi» o «pi*(e^2-1)/2».` },
+],
+
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* Núcleo de la interfaz: estado persistente, fechas, iconos, texto enriquecido y render de fórmulas. */
+(function (root) {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/* texto con **negrita**, «código», líneas y listas numeradas */
+function rich(text) {
+  const inline = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/«([^»]+)»/g, '<code>$1</code>');
+  let html = '', ol = [];
+  const flush = () => { if (ol.length) { html += '<ol>' + ol.map((x) => '<li>' + inline(x) + '</li>').join('') + '</ol>'; ol = []; } };
+  for (const line of String(text).split('\n')) {
+    const m = /^\d+\.\s+(.*)$/.exec(line);
+    if (m) ol.push(m[1]); else { flush(); if (line.trim()) html += '<p>' + inline(line) + '</p>'; }
+  }
+  flush(); return html;
+}
+
+/* iconos (trazo o relleno, heredan el color del texto) */
+const S = (body, extra = '') => '<svg class="i" viewBox="0 0 24 24" ' + extra + ' aria-hidden="true">' + body + '</svg>';
+const ST = 'fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"';
+const I = {
+  check: S('<path d="M5 12.5l4.5 4.5L19 7.5"/>', ST),
+  lock: S('<path d="M7 10.5V8a5 5 0 0 1 10 0v2.5M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5z"/>', 'fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"'),
+  play: S('<path d="M8.5 5.6v12.8a1 1 0 0 0 1.5.86l10.2-6.4a1 1 0 0 0 0-1.72L10 4.74a1 1 0 0 0-1.5.86z"/>', 'fill="currentColor"'),
+  close: S('<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>', ST),
+  flame: S('<path d="M12.5 2.2c.4 2.6 1.7 3.9 3.2 5.6 1.6 1.8 2.8 3.6 2.8 6.2a6.5 6.5 0 0 1-13 0c0-2.4 1-4.1 2.4-5.4.2 1.4.9 2.4 1.9 2.8-.4-3.6.3-6.5 2.7-11.2zM12 20.2a2.9 2.9 0 0 0 2.9-2.9c0-1.5-1-2.4-2.1-3.5-.3 1.1-.9 1.6-1.6 1.9-.6.7-2.1 1.4-2.1 3.6A2.9 2.9 0 0 0 12 20.2z" fill-rule="evenodd"/>', 'fill="currentColor"'),
+  bolt: S('<path d="M13.2 2.5L5 13.4h6l-.9 8.1 8.4-11.2h-6.1l.8-7.8z"/>', 'fill="currentColor"'),
+  gear: S('<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>', ST),
+};
+
+/* fechas locales (aaaa-mm-dd) */
+const pad = (n) => String(n).padStart(2, '0');
+const dstr = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const today = () => dstr(new Date());
+const addDays = (s, n) => { const [y, m, d] = s.split('-').map(Number); return dstr(new Date(y, m - 1, d + n)); };
+
+/* estado guardado en el dispositivo (si el navegador no deja, funciona solo en memoria) */
+const KEY = 'integra.v1';
+const blank = () => ({ v: 1, xp: 0, streak: { n: 0, last: '' }, nodes: {} });
+function load() {
+  try { const j = JSON.parse(localStorage.getItem(KEY)); if (j && j.v === 1) return j; } catch (e) { /* sin almacenamiento */ }
+  return blank();
+}
+const store = { st: load() };
+store.save = () => { try { localStorage.setItem(KEY, JSON.stringify(store.st)); } catch (e) { /* sin almacenamiento */ } };
+store.reset = () => { store.st = blank(); store.save(); };
+
+/* MathJax: espera a que cargue y encadena los renders */
+let chain = Promise.resolve();
+function whenMJ(cb, tries = 0) {
+  const M = root.MathJax;
+  if (M && M.typesetPromise && M.startup && M.startup.promise) M.startup.promise.then(() => cb(true));
+  else if (tries > 150) cb(false);
+  else setTimeout(() => whenMJ(cb, tries + 1), 100);
+}
+function typeset(el) {
+  el.classList.add('mj-wait');
+  whenMJ((ok) => {
+    if (!ok) { el.classList.remove('mj-wait'); return; }
+    chain = chain.then(() => root.MathJax.typesetPromise([el])).catch(() => {}).then(() => el.classList.remove('mj-wait'));
+  });
+}
+function texInto(el, tex, display) {
+  whenMJ((ok) => {
+    if (!ok) { el.textContent = tex; return; }
+    try { el.replaceChildren(root.MathJax.tex2svg(tex, { display: !!display })); } catch (e) { el.textContent = tex; }
+  });
+}
+
+root.Core = { $, esc, rich, I, today, addDays, store, typeset, texInto };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* Pantallas y flujo: camino, hojas, sesión (teoría + ejercicios), repaso espaciado y resultados. */
+(function () {
+'use strict';
+const E = Engine, T = Topics, TH = Theory, C = Core;
+const { $, esc, rich, I, today, addDays, typeset, texInto } = C;
+const INT = [1, 2, 4, 8, 16, 32];           // días hasta el próximo repaso según el nivel de dominio (0-5)
+const DX = [0, -56, 0, 56];                  // zigzag del camino
+const st = () => C.store.st, save = () => C.store.save();
+const nd = (id) => st().nodes[id] || {};
+const isDone = (i) => !!nd(T[i].id).done;
+const unlocked = (i) => i === 0 || isDone(i - 1);
+const curIdx = () => T.findIndex((t, i) => !isDone(i) && unlocked(i));
+const dueIdx = () => T.map((t, i) => i).filter((i) => isDone(i) && (nd(T[i].id).due || '') <= today());
+const streakNow = () => { const s = st().streak; return (s.last === today() || s.last === addDays(today(), -1)) ? s.n : 0; };
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+
+/* ---------- hoja inferior ---------- */
+function sheet(html) {
+  const bd = document.createElement('div'); bd.className = 'backdrop';
+  const sh = document.createElement('div'); sh.className = 'sheet'; sh.setAttribute('role', 'dialog'); sh.setAttribute('aria-modal', 'true');
+  sh.innerHTML = '<div class="grab"></div>' + html;
+  document.body.append(bd, sh);
+  requestAnimationFrame(() => { bd.classList.add('in'); sh.classList.add('in'); });
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  const close = () => { bd.classList.remove('in'); sh.classList.remove('in'); document.removeEventListener('keydown', onKey); setTimeout(() => { bd.remove(); sh.remove(); }, 300); };
+  document.addEventListener('keydown', onKey); bd.onclick = close;
+  typeset(sh);
+  return { el: sh, close };
+}
+
+/* ---------- inicio ---------- */
+let firstRender = true;
+function home() {
+  const app = $('#app'), y = window.scrollY;
+  const due = dueIdx(), cur = curIdx(), done = T.filter((t, i) => isDone(i)).length;
+  let hero;
+  if (due.length) hero = { t: 'Repaso de hoy', p: due.length + (due.length === 1 ? ' tema para refrescar' : ' temas para refrescar'), b: 'Repasar', a: 'review' };
+  else if (cur >= 0) hero = { t: done ? 'Sigue donde lo dejaste' : 'Empieza aquí', p: T[cur].title, b: done ? 'Continuar' : 'Empezar', a: 'cur' };
+  else hero = { t: 'Camino completado', p: 'Practica cuando quieras para no perder nivel.' };
+
+  let html = `<div class="top"><div class="chips"><span class="chip">${I.flame}<span>${streakNow()} ${streakNow() === 1 ? 'día' : 'días'}</span></span><span class="chip">${I.bolt}<span>${st().xp} XP</span></span></div>
+    <button class="iconbtn" id="bset" aria-label="Ajustes">${I.gear}</button></div>
+    <h1>Integrales</h1><p class="lead">De las derivadas a los volúmenes de revolución, paso a paso.</p>
+    <div class="hero"><div class="grow"><h2>${esc(hero.t)}</h2><p>${esc(hero.p)}</p></div>${hero.b ? `<button class="btn sm" id="hbtn" style="flex:none">${hero.b}</button>` : ''}</div>`;
+  let last = null;
+  T.forEach((t, i) => {
+    if (t.island !== last) { if (last !== null) html += '</div></section>'; html += `<section class="island"><h2>${esc(t.island)}</h2><div class="path">`; last = t.island; }
+    else {
+      const x1 = 150 + DX[(i - 1) % 4], x2 = 150 + DX[i % 4];
+      html += `<svg class="link ${isDone(i - 1) ? 'done' : ''}" viewBox="0 0 300 38" preserveAspectRatio="none" aria-hidden="true"><path d="M${x1} 0 C${x1} 19 ${x2} 19 ${x2} 38"/></svg>`;
+    }
+    const s = isDone(i) ? 'done' : unlocked(i) ? 'open' : 'locked', n = nd(t.id);
+    const dots = s === 'done' ? '<div class="dots" title="Nivel de dominio">' + [0, 1, 2, 3, 4].map((k) => `<i class="${k < (n.box || 0) ? 'on' : ''}"></i>`).join('') + '</div>' : '';
+    html += `<div class="node ${s}" style="--dx:${DX[i % 4]}px"><button class="nb ${s}" data-i="${i}" aria-label="${esc(t.title)}${s === 'locked' ? ', bloqueado' : ''}">${s === 'done' ? I.check : s === 'open' ? I.play : I.lock}</button>
+      <div class="nl">${esc(t.title)}</div><div class="ns">${esc(t.sub)}</div>${dots}${due.includes(i) ? '<div class="due">Repasar hoy</div>' : ''}</div>`;
+  });
+  html += '</div></section>';
+  app.innerHTML = html;
+  app.querySelectorAll('.nb').forEach((b) => { b.onclick = () => nodeSheet(+b.dataset.i); });
+  $('#bset').onclick = settings;
+  const hb = $('#hbtn');
+  if (hb) hb.onclick = () => (hero.a === 'review' ? run({ mode: 'review', ids: due.slice(0, 3).map((i) => T[i].id) }) : run({ mode: 'lesson', ids: [T[cur].id], theory: true }));
+  if (firstRender) {
+    firstRender = false;
+    const o = app.querySelector('.nb.open');
+    if (o && cur > 2) window.scrollTo(0, window.scrollY + o.getBoundingClientRect().top - window.innerHeight / 2);
+  } else window.scrollTo(0, y);
+}
+
+function nodeSheet(i) {
+  const t = T[i], s = isDone(i) ? 'done' : unlocked(i) ? 'open' : 'locked', n = nd(t.id);
+  let body = `<h3>${esc(t.title)}</h3><p class="sub">${esc(t.sub)}${s === 'done' && n.best != null ? ' · Mejor resultado: ' + Math.round(n.best * 100) + ' %' : ''}</p><div class="stack">`;
+  if (s === 'locked') body += `<p class="sub" style="margin:0">Completa «${esc(T[i - 1].title)}» para desbloquearlo. Si ya lo dominas, salta con un test de 5 ejercicios sin fallar ninguno.</p>
+    <button class="btn" data-a="test">Hacer el test</button><button class="btn sec" data-a="theory">Ver teoría</button>`;
+  else if (s === 'open') body += '<button class="btn" data-a="lesson">Empezar lección</button><button class="btn sec" data-a="theory">Ver teoría</button>';
+  else body += '<button class="btn" data-a="practice">Practicar</button><button class="btn sec" data-a="theory">Ver teoría</button>';
+  const sh = sheet(body + '</div>');
+  sh.el.querySelectorAll('[data-a]').forEach((b) => {
+    b.onclick = () => {
+      const a = b.dataset.a; sh.close();
+      setTimeout(() => run(a === 'lesson' ? { mode: 'lesson', ids: [t.id], theory: true } : a === 'theory' ? { mode: 'theory', ids: [t.id] } : { mode: a, ids: [t.id] }), 180);
+    };
+  });
+}
+
+function settings() {
+  const sh = sheet(`<h3>Ajustes y ayuda</h3><p class="sub">Todo se guarda en este dispositivo.</p>
+    <h4>Cómo escribir las respuestas</h4><ul>
+      <li>Potencias: «x^2», «x^(3/2)». Fracciones: «1/3», «(x+1)/(x-1)».</li>
+      <li>Funciones: «sen(x)», «cos(2x)», «tg(x)», «ln(x)», «e^(2x)», «sqrt(x)», «arctg(x)».</li>
+      <li>Valor absoluto: «|x|» o «abs(x)». Constantes: «pi» y «e».</li>
+      <li>Las primitivas se comprueban derivando: cualquier forma equivalente vale y no hace falta «+C».</li>
+      <li>En resultados numéricos vale el valor exacto («ln(2)», «pi/3») o un decimal bien redondeado.</li></ul>
+    <h4>Instalar en el móvil</h4><ul><li>iPhone: Compartir, «Añadir a pantalla de inicio».</li><li>Android: menú ⋮, «Instalar aplicación».</li></ul>
+    <h4>Progreso</h4><div class="stack"><button class="btn sec" id="rs">Borrar mi progreso</button></div>`);
+  const rs = $('#rs', sh.el);
+  rs.onclick = () => {
+    if (rs.dataset.sure) { C.store.reset(); sh.close(); home(); return; }
+    rs.dataset.sure = 1; rs.textContent = 'Pulsa otra vez para confirmar'; rs.classList.remove('sec'); rs.classList.add('bad');
+  };
+}
+
+/* ---------- sesión ---------- */
+const KEYS = [
+  { l: 'x', t: 'x', nn: 1 }, { l: 'xⁿ', t: '^' }, { l: 'x²', t: '^2', nn: 1 }, { l: '( )', t: '()', b: 1 }, { l: '÷', t: '/' },
+  { l: '√', t: 'sqrt()', b: 1 }, { l: 'eˣ', t: 'e^()', b: 1 }, { l: 'ln', t: 'ln()', b: 1 }, { l: 'sen', t: 'sen()', b: 1 }, { l: 'cos', t: 'cos()', b: 1 },
+  { l: 'tg', t: 'tg()', b: 1 }, { l: 'arctg', t: 'arctg()', b: 1 }, { l: '|x|', t: 'abs()', b: 1, nn: 1 }, { l: 'π', t: 'pi' }, { l: 'e', t: 'e' },
+  { l: '+', t: '+' }, { l: '−', t: '-' }, { l: '·', t: '*' }, { l: '⌫', t: 'BS' },
+];
+function ansTex(ex) {
+  if (ex.kind === 'anti') return 'F(x)=' + E.LATEX(ex.sol) + '+C';
+  if (ex.kind === 'func') return "f'(x)=" + E.LATEX(ex.f);
+  const v = E.fn(ex.value)(0), ex0 = E.LATEX(ex.value);
+  return ex0 + (Number.isInteger(v) || /^-?\d+$/.test(ex.value) ? '' : '\\approx ' + String(+v.toFixed(4)).replace('.', '{,}'));
+}
+
+function run(cfg) {
+  const S = { mode: cfg.mode, ids: cfg.ids, tid: cfg.ids[0], phase: cfg.mode === 'theory' || cfg.theory ? 'theory' : 'ask', tp: 0,
+    N: cfg.mode === 'review' ? 6 : cfg.mode === 'test' ? 5 : 8, queue: [], resolved: 0, correct: 0, first: 0, xp: 0, per: {}, extras: 0, cur: null, att: 0, fail: false, locked: false };
+  if (cfg.mode === 'review') for (let k = 0; k < S.N; k++) S.queue.push({ id: S.ids[k % S.ids.length], d: 0.25 + Math.random() * 0.65 });
+  else if (cfg.mode !== 'theory') for (let k = 0; k < S.N; k++) S.queue.push({ id: S.tid, d: cfg.mode === 'test' ? 0.3 + 0.7 * k / (S.N - 1) : k / (S.N - 1) });
+
+  const el = document.createElement('div'); el.className = 'session'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
+  el.innerHTML = `<div class="s-top"><div class="s-in row"><button class="iconbtn" id="sx" aria-label="Cerrar">${I.close}</button><div class="bar"><i id="sbar"></i></div><span class="s-count" id="scnt"></span></div></div>
+    <div class="s-body" id="sbody"><div class="s-in" id="sin"></div></div><div class="s-foot"><div class="s-in" id="sfoot"></div></div>`;
+  document.body.appendChild(el); document.body.style.overflow = 'hidden';
+  const body = $('#sin', el), foot = $('#sfoot', el), bar = $('#sbar', el), cnt = $('#scnt', el), scroller = $('#sbody', el), barBox = $('.bar', el);
+  const vv = window.visualViewport;
+  const fit = () => { el.style.top = vv.offsetTop + 'px'; el.style.height = vv.height + 'px'; el.style.bottom = 'auto'; };
+  if (vv) { vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); fit(); }
+  const close = () => { if (vv) { vv.removeEventListener('resize', fit); vv.removeEventListener('scroll', fit); } el.remove(); document.body.style.overflow = ''; home(); };
+  $('#sx', el).onclick = () => {
+    if (S.phase !== 'ask' || (S.resolved === 0 && S.att === 0)) return close();
+    const sh = sheet('<h3>¿Salir de la sesión?</h3><p class="sub">Se perderá el avance de esta sesión.</p><div class="stack"><button class="btn" id="keep">Seguir</button><button class="btn sec" id="leave">Salir</button></div>');
+    $('#keep', sh.el).onclick = sh.close; $('#leave', sh.el).onclick = () => { sh.close(); close(); };
+  };
+  const setBar = () => { const tot = S.N + S.extras; bar.style.width = (100 * S.resolved / tot) + '%'; cnt.textContent = Math.min(S.resolved, tot) + '/' + tot; };
+
+  /* teoría */
+  function theory() {
+    const pages = TH[S.tid] || [], p = pages[S.tp];
+    if (!p) { S.phase = 'ask'; return ask(); }
+    barBox.style.visibility = 'hidden'; cnt.textContent = (S.tp + 1) + '/' + pages.length;
+    const last = S.tp === pages.length - 1;
+    body.innerHTML = `<div class="tpage"><h3>${esc(p.h)}</h3>${p.body ? rich(p.body) : ''}${p.fx ? '<div class="fxs">' + p.fx.map((f) => `<div class="fx">$$${f}$$</div>`).join('') + '</div>' : ''}
+      ${p.ex ? `<div class="ex"><div class="tag">Ejemplo</div><div class="fx" style="background:none;padding:6px 0">$$${p.ex.q}$$</div>${p.ex.steps.map((s) => `<div class="st">${rich(s).replace(/^<p>|<\/p>$/g, '')}</div>`).join('')}</div>` : ''}</div>
+      <div class="pdots">${pages.map((_, k) => `<i class="${k <= S.tp ? 'on' : ''}"></i>`).join('')}</div>`;
+    typeset(body); scroller.scrollTop = 0;
+    foot.innerHTML = `<div class="row">${S.tp > 0 ? '<button class="btn sec" id="back" style="width:auto;padding-inline:22px">Atrás</button>' : ''}<button class="btn grow" id="nx">${last ? (S.mode === 'theory' ? 'Listo' : 'Empezar ejercicios') : 'Siguiente'}</button></div>`;
+    const bk = $('#back', el); if (bk) bk.onclick = () => { S.tp--; theory(); };
+    $('#nx', el).onclick = () => { if (!last) { S.tp++; theory(); } else if (S.mode === 'theory') close(); else { S.phase = 'ask'; barBox.style.visibility = ''; ask(); } };
+  }
+
+  /* ejercicio */
+  function ask() {
+    if (!S.queue.length) return finish();
+    const d = S.queue.shift(), topic = T.find((t) => t.id === d.id); let ex;
+    try { ex = topic.gen(d.d); } catch (e) { return ask(); }
+    S.cur = ex; S.curTopic = topic.id; S.att = 0; S.locked = false; barBox.style.visibility = ''; setBar();
+    body.innerHTML = `<div class="prompt">${rich(ex.prompt)}</div><div class="q" id="qbox"></div>
+      <div class="field" id="fld"><label for="ans">${esc(ex.label)}</label><input id="ans" type="text" inputmode="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-label="Tu respuesta"></div>
+      <div class="pv" id="pv"><span class="lbl">Vista previa</span></div><div class="keys" id="keys" role="group" aria-label="Teclado matemático"></div><div id="fbbox" aria-live="polite"></div>`;
+    texInto($('#qbox', el), ex.qtex, true);
+    const input = $('#ans', el), fld = $('#fld', el), fb = $('#fbbox', el), pv = $('#pv', el), keys = $('#keys', el);
+    scroller.scrollTop = 0;
+    KEYS.filter((k) => !(ex.kind === 'num' && k.nn)).forEach((k) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = k.l; b.setAttribute('aria-label', k.l);
+      b.addEventListener('pointerdown', (e) => e.preventDefault());
+      b.onclick = () => {
+        const a = input.selectionStart, z = input.selectionEnd; input.focus({ preventScroll: true });
+        if (k.t === 'BS') { const s = a === z ? Math.max(0, a - 1) : a; input.value = input.value.slice(0, s) + input.value.slice(z); input.setSelectionRange(s, s); }
+        else { input.value = input.value.slice(0, a) + k.t + input.value.slice(z); const p = a + k.t.length - (k.b ? 1 : 0); input.setSelectionRange(p, p); }
+        upd();
+      };
+      keys.appendChild(b);
+    });
+    foot.innerHTML = '<button class="btn" id="chk" disabled>Comprobar</button>';
+    const chk = $('#chk', el); let pt;
+    function upd() {
+      chk.disabled = !input.value.trim() || S.locked; clearTimeout(pt);
+      pt = setTimeout(() => {
+        const v = input.value; if (!v.trim()) { pv.className = 'pv'; pv.innerHTML = '<span class="lbl">Vista previa</span>'; return; }
+        const r = E.preview(v);
+        if (r.ok) { pv.className = 'pv'; pv.innerHTML = '<span class="lbl">Se lee</span><span id="pvx"></span>'; texInto($('#pvx', el), r.tex); }
+        else { pv.className = 'pv err'; pv.textContent = r.msg; }
+      }, 90);
+    }
+    input.oninput = upd;
+    input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); if (S.locked) next(); else if (!chk.disabled) check(); } };
+    chk.onclick = () => (S.locked ? next() : check());
+    const solBlock = () => { const id = 'fin' + Math.random().toString(36).slice(2, 7); return { id, html: `<div class="sol">${rich(S.cur.steps.join('\n'))}<div class="fin" id="${id}"></div></div>` }; };
+    const showSol = () => { const s = solBlock(); fb.insertAdjacentHTML('beforeend', s.html); typeset(fb); texInto($('#' + s.id, el), ansTex(S.cur), true); };
+    const lockUI = () => { S.locked = true; input.disabled = true; chk.disabled = false; chk.textContent = 'Continuar'; chk.classList.remove('bad'); };
+    const shake = () => { fld.classList.add('bad'); setTimeout(() => fld.classList.remove('bad'), 800); };
+    const tally = (firstTry) => { const p = S.per[S.curTopic] || (S.per[S.curTopic] = { n: 0, first: 0 }); p.n++; if (firstTry) p.first++; S.resolved++; setBar(); };
+
+    function check() {
+      const r = E.check(ex, input.value);
+      if (r.err || r.empty) { fb.innerHTML = `<div class="fb bad"><b>Revisa cómo lo has escrito</b>${esc(r.msg)}</div>`; shake(); return; }
+      if (r.ok) {
+        const firstTry = S.att === 0; S.correct++; S.xp += firstTry ? 10 : 5; if (firstTry) S.first++; tally(firstTry); lockUI(); fld.classList.add('good');
+        fb.innerHTML = `<div class="fb ok"><b>${pick(['Correcto', 'Muy bien', 'Perfecto', 'Así se hace'])}</b>${r.approx ? 'Valor aproximado aceptado. El exacto es ' + '$' + E.LATEX(ex.value) + '$.' : ''}<div><button class="btn sec sm hintbtn" id="sv">Ver solución</button></div></div>`;
+        typeset(fb); $('#sv', el).onclick = (e) => { e.target.remove(); showSol(); };
+        chk.focus({ preventScroll: true }); return;
+      }
+      S.att++;
+      if (S.mode !== 'test' && S.att === 1) {
+        fb.innerHTML = `<div class="fb bad"><b>No es correcto</b>${esc(r.msg)}<div><button class="btn sec sm hintbtn" id="hb">Ver pista</button></div></div>`; shake();
+        $('#hb', el).onclick = (e) => { e.target.remove(); fb.insertAdjacentHTML('beforeend', `<div class="hint">${rich(ex.hint || 'Revisa el procedimiento paso a paso.').replace(/^<p>|<\/p>$/g, '')}</div>`); typeset(fb); };
+        input.focus({ preventScroll: true }); input.select(); return;
+      }
+      if (S.mode === 'test') S.fail = true;
+      else if (S.extras < 4) { S.queue.push({ id: S.curTopic, d: 0.4 + Math.random() * 0.5 }); S.extras++; }
+      tally(false); lockUI();
+      fb.innerHTML = `<div class="fb bad"><b>Esta vez no</b>${esc(r.msg)} Así se resuelve:</div>`; showSol(); chk.focus({ preventScroll: true });
+    }
+    function next() { if (S.fail) finish(); else ask(); }
+    input.focus({ preventScroll: true });
+  }
+
+  /* resultado */
+  function bump(id, acc) {
+    const n = st().nodes[id] || (st().nodes[id] = {}), first = !n.done;
+    n.done = true; n.seen = (n.seen || 0) + 1; n.best = Math.max(n.best || 0, acc);
+    if (first) n.box = acc >= 0.8 ? 1 : 0; else if (acc >= 0.8) n.box = Math.min(5, (n.box || 0) + 1); else if (acc < 0.6) n.box = Math.max(0, (n.box || 0) - 1);
+    n.due = addDays(today(), INT[n.box || 0]);
+  }
+  function finish() {
+    S.phase = 'done'; barBox.style.visibility = ''; bar.style.width = '100%'; cnt.textContent = '';
+    const s = st(), acc = S.first / S.N, idx = T.findIndex((t) => t.id === S.tid);
+    let title, sub, icon = I.check, cls = '', accTxt = Math.round(acc * 100) + ' %';
+    if (S.mode === 'test') {
+      if (!S.fail) {
+        for (let i = 0; i <= idx; i++) { const n = s.nodes[T[i].id] || (s.nodes[T[i].id] = {}); if (!n.done) { n.done = true; n.skipped = true; n.box = 1; n.due = addDays(today(), INT[1]); n.best = 1; n.seen = 0; } }
+        S.xp += 30; title = '¡Test superado!'; sub = 'Has desbloqueado «' + T[idx].title + '» y todos los temas anteriores.'; accTxt = '5/5';
+      } else { title = 'Aún no'; sub = 'Haz la lección para dominar este tema y vuelve a intentarlo cuando quieras.'; icon = I.lock; cls = 'warn'; accTxt = S.correct + '/5'; }
+    } else if (S.mode === 'review') {
+      Object.keys(S.per).forEach((id) => bump(id, S.per[id].first / S.per[id].n));
+      title = 'Repaso terminado'; sub = S.first + ' de ' + S.N + ' a la primera. Volverán a salir cuando toque.';
+    } else {
+      const was = isDone(idx); bump(S.tid, acc);
+      title = S.mode === 'lesson' ? 'Lección completada' : 'Práctica terminada';
+      sub = S.first + ' de ' + S.N + ' a la primera.';
+      if (!was && T[idx + 1]) sub += ' Has desbloqueado «' + T[idx + 1].title + '».';
+      else if (acc < 0.6) sub += ' Lo repasaremos pronto para afianzarlo.';
+    }
+    if (S.correct > 0) { const k = s.streak; if (k.last !== today()) { k.n = k.last === addDays(today(), -1) ? k.n + 1 : 1; k.last = today(); } }
+    s.xp += S.xp; save();
+    body.innerHTML = `<div class="done-screen"><div class="big ${cls}">${icon}</div><h2>${esc(title)}</h2><p class="lead">${esc(sub)}</p>
+      <div class="stats"><div class="stat"><b>+${S.xp}</b><span>XP</span></div><div class="stat"><b>${accTxt}</b><span>Aciertos a la primera</span></div><div class="stat"><b>${streakNow()}</b><span>${streakNow() === 1 ? 'Día de racha' : 'Días de racha'}</span></div></div></div>`;
+    foot.innerHTML = '<button class="btn" id="fin">Continuar</button>';
+    $('#fin', el).onclick = close; scroller.scrollTop = 0;
+  }
+
+  if (S.phase === 'theory') theory(); else ask();
+}
+
+home();
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !$('.session')) home(); });
+})();
+
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
+</body>
+</html>
