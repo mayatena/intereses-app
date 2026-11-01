@@ -1,1 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="115" fill="#0071e3"/><path d="M300 108c-34 0-52 20-58 62l-14 102c-6 46-22 66-52 66" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round"/><circle cx="322" cy="124" r="22" fill="#fff"/><circle cx="176" cy="372" r="22" fill="#fff"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f2a7a"/><stop offset="1" stop-color="#12112e"/></linearGradient>
+<radialGradient id="glow" cx="256" cy="262" r="210" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffc933" stop-opacity=".5"/><stop offset=".55" stop-color="#ffc933" stop-opacity=".14"/><stop offset="1" stop-color="#ffc933" stop-opacity="0"/></radialGradient>
+<radialGradient id="glass" cx="232" cy="200" r="150" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff3a0"/><stop offset=".55" stop-color="#ffd428"/><stop offset="1" stop-color="#ffab00"/></radialGradient>
+<linearGradient id="base" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9aa0b4"/><stop offset=".5" stop-color="#e6e8f0"/><stop offset="1" stop-color="#8b91a6"/></linearGradient>
+</defs>
+<rect width="512" height="512" rx="115" fill="url(#bg)"/>
+<g transform="translate(0,30)">
+<circle cx="256" cy="232" r="208" fill="url(#glow)"/>
+<g stroke="#ffd23f" stroke-width="16" stroke-linecap="round">
+<path d="M256 62v-30" transform="translate(0,60)"/>
+<path d="M376 112l22-22M136 112l-22-22M418 232h30M94 232H64"/>
+</g>
+<path d="M214 340C214 322 206 312 192 296C174 276 163 255 163 232C163 176 204 133 256 133C308 133 349 176 349 232C349 255 338 276 320 296C306 312 298 322 298 340Z" fill="url(#glass)"/>
+<path d="M238 342V298l18-24 18 24v44" fill="none" stroke="#d98a00" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M190 214c0-26 14-50 36-62" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="14" stroke-linecap="round"/>
+<rect x="212" y="346" width="88" height="22" rx="8" fill="url(#base)"/>
+<rect x="216" y="372" width="80" height="20" rx="8" fill="url(#base)"/>
+<path d="M232 396h48a0 0 0 0 1 0 0c0 12-10 20-24 20s-24-8-24-20z" fill="#7c8298"/>
+</g>
+</svg>
