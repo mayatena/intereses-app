@@ -1,6 +1,6 @@
 const fs=require('fs'),path=require('path');
 require('../src/engine.js'); const E=globalThis.Engine;
-for(const f of fs.readdirSync(path.join(__dirname,'../src')).filter(f=>/^(topics|theory).*\.js$/.test(f)).sort()) require('../src/'+f);
+for(const f of ['topics1.js','topics2.js','topics3.js','theory.js']) require('../src/'+f);
 
 const KATEX=require('/opt/npm-tools/node_modules/katex');
 const OK_CMDS=new Set(['frac','sqrt','int','left','right','cdot','operatorname','ln','cos','sin','tan','pi','to','Rightarrow','quad','qquad','arccos','exp','dots','ldots','times','leq','geq','neq','approx','infty','sum','lim','text','mathrm','bigg','Big','big','displaystyle','mathbb','Delta','theta','alpha','le','ge','Longrightarrow','Leftrightarrow','pm','div','in','cup','cap','subset','partial','forall','exists','cos','log','min','max']);

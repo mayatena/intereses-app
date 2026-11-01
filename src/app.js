@@ -7,10 +7,18 @@ const INT = [1, 2, 4, 8, 16, 32];           // días hasta el próximo repaso se
 const DX = [0, -56, 0, 56];                  // zigzag del camino
 const st = () => C.store.st, save = () => C.store.save();
 const nd = (id) => st().nodes[id] || {};
+const SUBJ = [
+  { id: 'int', name: 'Integrales', lead: 'De las derivadas a los volúmenes de revolución, paso a paso.' },
+  { id: 'geo', name: 'Geometría', lead: 'Vectores, rectas y planos: de las ecuaciones a los problemas tipo.' },
+];
+const sOf = (i) => T[i].subj || 'int';
+const tab = () => (SUBJ.some((s) => s.id === st().tab) ? st().tab : 'int');
+const prevIdx = (i) => { for (let k = i - 1; k >= 0; k--) if (sOf(k) === sOf(i)) return k; return -1; };
+const nextIdx = (i) => { for (let k = i + 1; k < T.length; k++) if (sOf(k) === sOf(i)) return k; return -1; };
 const isDone = (i) => !!nd(T[i].id).done;
-const unlocked = (i) => i === 0 || isDone(i - 1);
-const curIdx = () => T.findIndex((t, i) => !isDone(i) && unlocked(i));
-const dueIdx = () => T.map((t, i) => i).filter((i) => isDone(i) && (nd(T[i].id).due || '') <= today());
+const unlocked = (i) => { const p = prevIdx(i); return p < 0 || isDone(p); };
+const curIdx = (sj = tab()) => T.findIndex((t, i) => sOf(i) === sj && !isDone(i) && unlocked(i));
+const dueIdx = (sj = tab()) => T.map((t, i) => i).filter((i) => sOf(i) === sj && isDone(i) && (nd(T[i].id).due || '') <= today());
 const streakNow = () => { const s = st().streak; return (s.last === today() || s.last === addDays(today(), -1)) ? s.n : 0; };
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 
@@ -32,7 +40,8 @@ function sheet(html) {
 let firstRender = true;
 function home() {
   const app = $('#app'), y = window.scrollY;
-  const due = dueIdx(), cur = curIdx(), done = T.filter((t, i) => isDone(i)).length;
+  const sj = tab(), SJ = SUBJ.find((x) => x.id === sj), L = T.map((t, i) => i).filter((i) => sOf(i) === sj);
+  const due = dueIdx(), cur = curIdx(), done = L.filter(isDone).length;
   let hero;
   if (due.length) hero = { t: 'Repaso de hoy', p: due.length + (due.length === 1 ? ' tema para refrescar' : ' temas para refrescar'), b: 'Repasar', a: 'review' };
   else if (cur >= 0) hero = { t: done ? 'Sigue donde lo dejaste' : 'Empieza aquí', p: T[cur].title, b: done ? 'Continuar' : 'Empezar', a: 'cur' };
@@ -40,37 +49,40 @@ function home() {
 
   let html = `<div class="top"><div class="chips"><span class="chip">${I.flame}<span>${streakNow()} ${streakNow() === 1 ? 'día' : 'días'}</span></span><span class="chip">${I.bolt}<span>${st().xp} XP</span></span></div>
     <button class="iconbtn" id="bset" aria-label="Ajustes">${I.gear}</button></div>
-    <h1>Integrales</h1><p class="lead">De las derivadas a los volúmenes de revolución, paso a paso.</p>
+    <div class="seg" role="tablist" aria-label="Asignatura">${SUBJ.map((x) => `<button role="tab" class="${x.id === sj ? 'on' : ''}" aria-selected="${x.id === sj}" data-s="${x.id}">${x.name}${x.id !== sj && dueIdx(x.id).length ? '<i class="dot" title="Tienes repasos pendientes"></i>' : ''}</button>`).join('')}</div>
+    <h1>${SJ.name}</h1><p class="lead">${SJ.lead}</p>
     <div class="hero"><div class="grow"><h2>${esc(hero.t)}</h2><p>${esc(hero.p)}</p></div>${hero.b ? `<button class="btn sm" id="hbtn" style="flex:none">${hero.b}</button>` : ''}</div>`;
   let last = null;
-  T.forEach((t, i) => {
+  L.forEach((i, j) => {
+    const t = T[i];
     if (t.island !== last) { if (last !== null) html += '</div></section>'; html += `<section class="island"><h2>${esc(t.island)}</h2><div class="path">`; last = t.island; }
     else {
-      const x1 = 150 + DX[(i - 1) % 4], x2 = 150 + DX[i % 4];
-      html += `<svg class="link ${isDone(i - 1) ? 'done' : ''}" viewBox="0 0 300 38" preserveAspectRatio="none" aria-hidden="true"><path d="M${x1} 0 C${x1} 19 ${x2} 19 ${x2} 38"/></svg>`;
+      const x1 = 150 + DX[(j - 1) % 4], x2 = 150 + DX[j % 4];
+      html += `<svg class="link ${isDone(L[j - 1]) ? 'done' : ''}" viewBox="0 0 300 38" preserveAspectRatio="none" aria-hidden="true"><path d="M${x1} 0 C${x1} 19 ${x2} 19 ${x2} 38"/></svg>`;
     }
     const s = isDone(i) ? 'done' : unlocked(i) ? 'open' : 'locked', n = nd(t.id);
     const dots = s === 'done' ? '<div class="dots" title="Nivel de dominio">' + [0, 1, 2, 3, 4].map((k) => `<i class="${k < (n.box || 0) ? 'on' : ''}"></i>`).join('') + '</div>' : '';
-    html += `<div class="node ${s}" style="--dx:${DX[i % 4]}px"><button class="nb ${s}" data-i="${i}" aria-label="${esc(t.title)}${s === 'locked' ? ', bloqueado' : ''}">${s === 'done' ? I.check : s === 'open' ? I.play : I.lock}</button>
+    html += `<div class="node ${s}" style="--dx:${DX[j % 4]}px"><button class="nb ${s}" data-i="${i}" aria-label="${esc(t.title)}${s === 'locked' ? ', bloqueado' : ''}">${s === 'done' ? I.check : s === 'open' ? I.play : I.lock}</button>
       <div class="nl">${esc(t.title)}</div><div class="ns">${esc(t.sub)}</div>${dots}${due.includes(i) ? '<div class="due">Repasar hoy</div>' : ''}</div>`;
   });
   html += '</div></section>';
   app.innerHTML = html;
   app.querySelectorAll('.nb').forEach((b) => { b.onclick = () => nodeSheet(+b.dataset.i); });
   $('#bset').onclick = settings;
+  app.querySelectorAll('.seg button').forEach((b) => { b.onclick = () => { if (b.dataset.s === sj) return; st().tab = b.dataset.s; save(); firstRender = true; window.scrollTo(0, 0); home(); }; });
   const hb = $('#hbtn');
   if (hb) hb.onclick = () => (hero.a === 'review' ? run({ mode: 'review', ids: due.slice(0, 3).map((i) => T[i].id) }) : run({ mode: 'lesson', ids: [T[cur].id], theory: true }));
   if (firstRender) {
     firstRender = false;
     const o = app.querySelector('.nb.open');
-    if (o && cur > 2) window.scrollTo(0, window.scrollY + o.getBoundingClientRect().top - window.innerHeight / 2);
+    if (o && L.indexOf(cur) > 2) window.scrollTo(0, window.scrollY + o.getBoundingClientRect().top - window.innerHeight / 2);
   } else window.scrollTo(0, y);
 }
 
 function nodeSheet(i) {
   const t = T[i], s = isDone(i) ? 'done' : unlocked(i) ? 'open' : 'locked', n = nd(t.id);
   let body = `<h3>${esc(t.title)}</h3><p class="sub">${esc(t.sub)}${s === 'done' && n.best != null ? ' · Mejor resultado: ' + Math.round(n.best * 100) + ' %' : ''}</p><div class="stack">`;
-  if (s === 'locked') body += `<p class="sub" style="margin:0">Completa «${esc(T[i - 1].title)}» para desbloquearlo. Si ya lo dominas, salta con un test de 5 ejercicios sin fallar ninguno.</p>
+  if (s === 'locked') body += `<p class="sub" style="margin:0">Completa «${esc(T[prevIdx(i)].title)}» para desbloquearlo. Si ya lo dominas, salta con un test de 5 ejercicios sin fallar ninguno.</p>
     <button class="btn" data-a="test">Hacer el test</button><button class="btn sec" data-a="theory">Ver teoría</button>`;
   else if (s === 'open') body += '<button class="btn" data-a="lesson">Empezar lección</button><button class="btn sec" data-a="theory">Ver teoría</button>';
   else body += '<button class="btn" data-a="practice">Practicar</button><button class="btn sec" data-a="theory">Ver teoría</button>';
@@ -91,6 +103,11 @@ function settings() {
       <li>Valor absoluto: «|x|» o «abs(x)». Constantes: «pi» y «e».</li>
       <li>Las primitivas se comprueban derivando: cualquier forma equivalente vale y no hace falta «+C».</li>
       <li>En resultados numéricos vale el valor exacto («ln(2)», «pi/3») o un decimal bien redondeado.</li></ul>
+    <h4>Geometría</h4><ul>
+      <li>Vectores y puntos: «(1, -2, 3)». Fracciones con barra («1/2») y decimales con punto («0.5»), porque la coma separa componentes.</li>
+      <li>Planos: «2x - y + z = 4». Vale cualquier múltiplo de la ecuación.</li>
+      <li>Rectas: vectorial «(x,y,z) = (1,0,2) + λ(1,1,0)», paramétricas separadas por «;», continua o implícita. Si el ejercicio pide una forma, la app lo indica.</li>
+      <li>Distancias y ángulos: valor exacto («sqrt(14)/7») o un decimal bien redondeado; los ángulos, en grados.</li></ul>
     <h4>Instalar en el móvil</h4><ul><li>iPhone: Compartir, «Añadir a pantalla de inicio».</li><li>Android: menú ⋮, «Instalar aplicación».</li></ul>
     <h4>Progreso</h4><div class="stack"><button class="btn sec" id="rs">Borrar mi progreso</button></div>`);
   const rs = $('#rs', sh.el);
@@ -107,7 +124,15 @@ const KEYS = [
   { l: 'tg', t: 'tg()', b: 1 }, { l: 'arctg', t: 'arctg()', b: 1 }, { l: '|x|', t: 'abs()', b: 1, nn: 1 }, { l: 'π', t: 'pi' }, { l: 'e', t: 'e' },
   { l: '+', t: '+' }, { l: '−', t: '-' }, { l: '·', t: '*' }, { l: '⌫', t: 'BS' },
 ];
+const GK = (l, t, b) => ({ l, t, b });
+const GKEYS = {
+  vec: [GK('( )', '()', 1), GK(',', ','), GK('−', '-'), GK('/', '/'), GK('√', 'sqrt()', 1), GK('π', 'pi'), GK('⌫', 'BS')],
+  plane: [GK('x', 'x'), GK('y', 'y'), GK('z', 'z'), GK('=', '='), GK('+', '+'), GK('−', '-'), GK('·', '*'), GK('( )', '()', 1), GK('/', '/'), GK('⌫', 'BS')],
+  line: [GK('x', 'x'), GK('y', 'y'), GK('z', 'z'), GK('λ', 'λ'), GK('=', '='), GK('( )', '()', 1), GK(',', ','), GK(';', '; '), GK('+', '+'), GK('−', '-'), GK('/', '/'), GK('⌫', 'BS')],
+  gnum: [GK('√', 'sqrt()', 1), GK('( )', '()', 1), GK('/', '/'), GK('π', 'pi'), GK('+', '+'), GK('−', '-'), GK('·', '*'), GK('⌫', 'BS')],
+};
 function ansTex(ex) {
+  if (ex.ansTex) return ex.ansTex;
   if (ex.kind === 'anti') return 'F(x)=' + E.LATEX(ex.sol) + '+C';
   if (ex.kind === 'func') return "f'(x)=" + E.LATEX(ex.f);
   const v = E.fn(ex.value)(0), ex0 = E.LATEX(ex.value);
@@ -143,7 +168,7 @@ function run(cfg) {
     barBox.style.visibility = 'hidden'; cnt.textContent = (S.tp + 1) + '/' + pages.length;
     const last = S.tp === pages.length - 1;
     body.innerHTML = `<div class="tpage"><h3>${esc(p.h)}</h3>${p.body ? rich(p.body) : ''}${p.fx ? '<div class="fxs">' + p.fx.map((f) => `<div class="fx">$$${f}$$</div>`).join('') + '</div>' : ''}
-      ${p.ex ? `<div class="ex"><div class="tag">Ejemplo</div><div class="fx" style="background:none;padding:6px 0">$$${p.ex.q}$$</div>${p.ex.steps.map((s) => `<div class="st">${rich(s).replace(/^<p>|<\/p>$/g, '')}</div>`).join('')}</div>` : ''}</div>
+      ${p.ex ? `<div class="ex"><div class="tag">Ejemplo</div><div class="fx" style="background:none;padding:6px 0">$$${p.ex.q.includes('\\qquad') ? '\\begin{array}{l}' + p.ex.q.split('\\qquad').map((x) => x.trim()).join('\\\\[6pt]') + '\\end{array}' : p.ex.q}$$</div>${p.ex.steps.map((s) => `<div class="st">${rich(s).replace(/^<p>|<\/p>$/g, '')}</div>`).join('')}</div>` : ''}</div>
       <div class="pdots">${pages.map((_, k) => `<i class="${k <= S.tp ? 'on' : ''}"></i>`).join('')}</div>`;
     typeset(body); scroller.scrollTop = 0;
     foot.innerHTML = `<div class="row">${S.tp > 0 ? '<button class="btn sec" id="back" style="width:auto;padding-inline:22px">Atrás</button>' : ''}<button class="btn grow" id="nx">${last ? (S.mode === 'theory' ? 'Listo' : 'Empezar ejercicios') : 'Siguiente'}</button></div>`;
@@ -157,13 +182,14 @@ function run(cfg) {
     const d = S.queue.shift(), topic = T.find((t) => t.id === d.id); let ex;
     try { ex = topic.gen(d.d); } catch (e) { return ask(); }
     S.cur = ex; S.curTopic = topic.id; S.att = 0; S.locked = false; barBox.style.visibility = ''; setBar();
-    body.innerHTML = `<div class="prompt">${rich(ex.prompt)}</div><div class="q" id="qbox"></div>
-      <div class="field" id="fld"><label for="ans">${esc(ex.label)}</label><input id="ans" type="text" inputmode="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-label="Tu respuesta"></div>
+    body.innerHTML = `<div class="prompt${ex.geo ? ' geo' : ''}">${rich(ex.prompt)}</div><div class="q${ex.geo ? ' geo' : ''}" id="qbox"></div>
+      <div class="field" id="fld"><label for="ans">${esc(ex.label)}</label><input id="ans" type="text"${ex.ph ? ' placeholder="' + esc(ex.ph) + '"' : ''} inputmode="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-label="Tu respuesta"></div>
       <div class="pv" id="pv"><span class="lbl">Vista previa</span></div><div class="keys" id="keys" role="group" aria-label="Teclado matemático"></div><div id="fbbox" aria-live="polite"></div>`;
-    texInto($('#qbox', el), ex.qtex, true);
+    if (ex.geo) typeset($('.prompt', el));
+    if (ex.qtex) texInto($('#qbox', el), ex.qtex, true); else $('#qbox', el).hidden = true;
     const input = $('#ans', el), fld = $('#fld', el), fb = $('#fbbox', el), pv = $('#pv', el), keys = $('#keys', el);
     scroller.scrollTop = 0;
-    KEYS.filter((k) => !(ex.kind === 'num' && k.nn)).forEach((k) => {
+    (ex.geo ? GKEYS[ex.keys] || GKEYS.gnum : KEYS.filter((k) => !(ex.kind === 'num' && k.nn))).forEach((k) => {
       const b = document.createElement('button'); b.type = 'button'; b.textContent = k.l; b.setAttribute('aria-label', k.l);
       b.addEventListener('pointerdown', (e) => e.preventDefault());
       b.onclick = () => {
@@ -180,7 +206,7 @@ function run(cfg) {
       chk.disabled = !input.value.trim() || S.locked; clearTimeout(pt);
       pt = setTimeout(() => {
         const v = input.value; if (!v.trim()) { pv.className = 'pv'; pv.innerHTML = '<span class="lbl">Vista previa</span>'; return; }
-        const r = E.preview(v);
+        const r = E.preview(v, ex);
         if (r.ok) { pv.className = 'pv'; pv.innerHTML = '<span class="lbl">Se lee</span><span id="pvx"></span>'; texInto($('#pvx', el), r.tex); }
         else { pv.className = 'pv err'; pv.textContent = r.msg; }
       }, 90);
@@ -199,7 +225,7 @@ function run(cfg) {
       if (r.err || r.empty) { fb.innerHTML = `<div class="fb bad"><b>Revisa cómo lo has escrito</b>${esc(r.msg)}</div>`; shake(); return; }
       if (r.ok) {
         const firstTry = S.att === 0; S.correct++; S.xp += firstTry ? 10 : 5; if (firstTry) S.first++; tally(firstTry); lockUI(); fld.classList.add('good');
-        fb.innerHTML = `<div class="fb ok"><b>${pick(['Correcto', 'Muy bien', 'Perfecto', 'Así se hace'])}</b>${r.approx ? 'Valor aproximado aceptado. El exacto es ' + '$' + E.LATEX(ex.value) + '$.' : ''}<div><button class="btn sec sm hintbtn" id="sv">Ver solución</button></div></div>`;
+        fb.innerHTML = `<div class="fb ok"><b>${pick(['Correcto', 'Muy bien', 'Perfecto', 'Así se hace'])}</b>${r.approx ? (ex.geo ? 'Valor aproximado aceptado.' : 'Valor aproximado aceptado. El exacto es $' + E.LATEX(ex.value) + '$.') : ''}<div><button class="btn sec sm hintbtn" id="sv">Ver solución</button></div></div>`;
         typeset(fb); $('#sv', el).onclick = (e) => { e.target.remove(); showSol(); };
         chk.focus({ preventScroll: true }); return;
       }
@@ -231,7 +257,7 @@ function run(cfg) {
     let title, sub, icon = I.check, cls = '', accTxt = Math.round(acc * 100) + ' %';
     if (S.mode === 'test') {
       if (!S.fail) {
-        for (let i = 0; i <= idx; i++) { const n = s.nodes[T[i].id] || (s.nodes[T[i].id] = {}); if (!n.done) { n.done = true; n.skipped = true; n.box = 1; n.due = addDays(today(), INT[1]); n.best = 1; n.seen = 0; } }
+        for (let i = 0; i <= idx; i++) { if (sOf(i) !== sOf(idx)) continue; const n = s.nodes[T[i].id] || (s.nodes[T[i].id] = {}); if (!n.done) { n.done = true; n.skipped = true; n.box = 1; n.due = addDays(today(), INT[1]); n.best = 1; n.seen = 0; } }
         S.xp += 30; title = '¡Test superado!'; sub = 'Has desbloqueado «' + T[idx].title + '» y todos los temas anteriores.'; accTxt = '5/5';
       } else { title = 'Aún no'; sub = 'Haz la lección para dominar este tema y vuelve a intentarlo cuando quieras.'; icon = I.lock; cls = 'warn'; accTxt = S.correct + '/5'; }
     } else if (S.mode === 'review') {
@@ -241,7 +267,7 @@ function run(cfg) {
       const was = isDone(idx); bump(S.tid, acc);
       title = S.mode === 'lesson' ? 'Lección completada' : 'Práctica terminada';
       sub = S.first + ' de ' + S.N + ' a la primera.';
-      if (!was && T[idx + 1]) sub += ' Has desbloqueado «' + T[idx + 1].title + '».';
+      if (!was && nextIdx(idx) >= 0) sub += ' Has desbloqueado «' + T[nextIdx(idx)].title + '».';
       else if (acc < 0.6) sub += ' Lo repasaremos pronto para afianzarlo.';
     }
     if (S.correct > 0) { const k = s.streak; if (k.last !== today()) { k.n = k.last === addDays(today(), -1) ? k.n + 1 : 1; k.last = today(); } }

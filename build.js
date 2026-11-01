@@ -1,7 +1,7 @@
 const fs=require('fs'),path=require('path');
 const R=(f)=>fs.readFileSync(path.join(__dirname,f),'utf8');
 const css=R('src/style.css');
-const js=['engine','topics1','topics2','topics3','theory','core','app'].map(f=>R('src/'+f+'.js')).join('\n');
+const js=['engine','geo','geolib','topics1','topics2','topics3','topics4','topics5','theory','theory2','core','app'].map(f=>R('src/'+f+'.js')).join('\n');
 if(/<\/script/i.test(js)) throw new Error('</script> dentro del JS');
 const MJ='https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js';
 const cfg=`<script>window.MathJax={tex:{inlineMath:[['$','$']],displayMath:[['$$','$$']]},svg:{fontCache:'none'},options:{enableMenu:false},startup:{typeset:false}};</script>

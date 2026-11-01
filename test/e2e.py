@@ -35,7 +35,13 @@ with sync_playwright() as p:
     def state(n):  # primeros n temas completados
         ids=['deriv','pot','elem','lin','sust','partes','racio','barrow','areas','vol']
         return {'v':1,'xp':0,'streak':{'n':0,'last':''},'nodes':{i:{'done':True,'box':1,'due':'2999-01-01','best':1,'seen':1} for i in ids[:n]}}
+    GEO=['gvec','gprod','grecta','gplano','gpos','gcrit1','gcrit2','gdist','gang','gsim']
+    def gstate(n):
+        st=state(0); st['tab']='geo'
+        for i in GEO[:n]: st['nodes'][i]={'done':True,'box':1,'due':'2999-01-01','best':1,'seen':1}
+        return st
     def ans(ex,i=0):
+        if ex.get('geo'): return ex['sol']
         v=ex['sol'] if ex['kind']=='anti' else ex['f'] if ex['kind']=='func' else ex['value']
         if ex['kind']=='anti' and i%3==1: v='('+v+')+C'
         return v
@@ -105,6 +111,36 @@ with sync_playwright() as p:
         page.fill('#ans',ans(ex)); page.press('#ans','Enter'); page.wait_for_selector('.fb.ok'); page.click('#chk')
     val=page.evaluate("Engine.fn(window.__ex.value)(0)"); page.fill('#ans',f'{val:.2f}'.replace('.',',')); page.press('#ans','Enter'); page.wait_for_selector('.fb')
     ok(page.query_selector('.fb.ok') is not None,f'decimal con coma aceptado ({val:.2f})'); page.screenshot(path=SH+'15_approx.png')
+    # ---------- D: Geometría ----------
+    load(gstate(0)); ok('Geometría' in page.inner_text('h1'),'pestaña geometría activa'); page.screenshot(path=SH+'20_geo_home.png',full_page=True)
+    page.click('.seg button[data-s=int]'); page.wait_for_selector('.nb'); ok('Integrales' in page.inner_text('h1'),'cambio a integrales')
+    st=page.evaluate("JSON.parse(localStorage.getItem('integra.v1'))"); ok(st.get('tab')=='int','pestaña guardada')
+    page.click('.seg button[data-s=geo]'); ok('Geometría' in page.inner_text('h1'),'vuelta a geometría')
+    for i,tid in enumerate(GEO):
+        load(gstate(i)); page.click('.nb.open'); page.click('[data-a=lesson]'); page.wait_for_selector('.tpage')
+        np=int(page.inner_text('#scnt').split('/')[1])
+        for k in range(np-1):
+            if tid in ('gpos','gsim') and k==1: page.screenshot(path=SH+f'21_{tid}_theory.png')
+            page.click('#nx')
+        page.click('#nx'); answer_all(9,'lección '+tid)
+        ok(page.query_selector('.done-screen') is not None,tid+': no llegó al final')
+        page.click('#fin'); page.wait_for_selector('.nb')
+        st=page.evaluate("JSON.parse(localStorage.getItem('integra.v1'))"); ok(st['nodes'][tid]['done'],tid+' no marcado'); print('geo lección',tid,'ok')
+    # capturas de ejercicios y error de forma
+    load(gstate(4)); page.click('.nb.open'); page.click('[data-a=lesson]'); page.wait_for_selector('.tpage')
+    while page.inner_text('#nx')!='Empezar ejercicios': page.click('#nx')
+    page.click('#nx'); page.wait_for_selector('#ans'); page.wait_for_timeout(400); page.screenshot(path=SH+'22_geo_ex.png')
+    ex=page.evaluate('window.__ex'); page.fill('#ans','(1,'); page.wait_for_timeout(250); page.screenshot(path=SH+'23_geo_preview_err.png')
+    page.fill('#ans','(1,2,3)'); page.press('#ans','Enter'); page.wait_for_selector('.fb')
+    # test de salto en geometría no toca integrales
+    s2=gstate(1); s2['nodes']={k:v for k,v in s2['nodes'].items() if k in GEO}
+    load(s2); page.click('.nb.locked >> nth=0'); page.click('[data-a=test]'); page.wait_for_selector('#ans'); answer_all(5,'test geo'); page.wait_for_selector('.done-screen')
+    page.click('#fin'); page.wait_for_selector('.nb')
+    st=page.evaluate("JSON.parse(localStorage.getItem('integra.v1'))"); ok(st['nodes']['grecta']['done'] and 'deriv' not in st['nodes'],'test geo solo marca geometría')
+    # repaso pendiente en la otra pestaña
+    s3=gstate(2); s3['tab']='int'; s3['nodes']['gvec']['due']='2000-01-01'
+    load(s3); ok(page.query_selector('.seg .dot') is not None,'punto de repaso pendiente en geometría'); page.screenshot(path=SH+'24_dot.png')
+    page.emulate_media(color_scheme='dark'); page.click('.seg button[data-s=geo]'); page.wait_for_timeout(250); page.screenshot(path=SH+'25_geo_dark.png'); page.emulate_media(color_scheme='light')
     # tema oscuro
     page.emulate_media(color_scheme='dark'); page.wait_for_timeout(200); page.screenshot(path=SH+'16_dark.png')
     b.close()

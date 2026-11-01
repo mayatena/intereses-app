@@ -156,3 +156,14 @@ mjx-container[display="true"] { margin: 0.4em 0 !important; overflow-x: auto; ov
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 .prompt p { margin: 0; }
 .hint p { margin: 0; }
+
+/* selector de asignatura */
+.seg { display: flex; gap: 2px; padding: 2px; margin: 14px 0 4px; background: var(--bg2); border-radius: 11px; }
+.seg button { flex: 1; position: relative; border: 0; background: transparent; color: var(--fg2); font: 600 15px var(--font); padding: 8px 10px; border-radius: 9px; cursor: pointer; transition: background .2s, color .2s, box-shadow .2s; }
+.seg button.on { background: var(--bg); color: var(--fg); box-shadow: 0 1px 3px rgba(0,0,0,.14), 0 0 0 .5px rgba(0,0,0,.04); }
+.seg .dot { position: absolute; top: 6px; right: 14px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent, #ff9f0a); }
+/* enunciados de geometría */
+.prompt.geo { color: var(--fg); font-size: 18px; line-height: 1.5; }
+.prompt.geo code { font-size: .92em; }
+.q.geo { font-size: 1.05em; justify-content: safe center; }
+.fx, .ex .fx { overflow-x: auto; max-width: 100%; }
